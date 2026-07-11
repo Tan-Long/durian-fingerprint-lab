@@ -193,6 +193,70 @@ Khuyến nghị trước mắt:
 - Excel master giữ toàn bộ field.
 - Sửa app sau khi protocol lấy mẫu ổn định.
 
+## Minh Họa Feature Map
+
+Mục tiêu của map nhận diện không phải là dựng mesh gai thật sắc, mà là tạo **atlas 2.5D** có đủ pattern tự nhiên để match lại cùng một quả.
+
+Feature nên lưu:
+
+- `spike_keypoints`: đỉnh gai, cụm gai nổi bật.
+- `hollow_keypoints`: hõm giữa cụm gai.
+- `seam_lines`: khe/nứt sọc chạy từ cuống xuống thân.
+- `texture_patches`: màu/vân vỏ cục bộ.
+- `coarse_shape`: dáng quả, vùng phồng/lõm, vị trí cuống/đáy.
+
+Concept map:
+
+```text
+          cuong / stem
+              *
+             /|\
+            / | \          seam_lines = khe/nut soc
+      -----/--|--\-----
+     /  ^  ^  |  ^  ^  \
+    |  o  ^  o|^  o  ^  |   ^ = spike keypoint
+    | ^  o  ^ | o  ^  o |   o = hollow/texture patch
+    |----------+---------|   + = atlas anchor around stem axis
+    |  o  ^  o|^  o  ^  |
+     \  ^  o  |  o  ^  /
+      -----\--|--/-----
+            \ | /
+             \|/
+             day / base
+```
+
+Data flow nhận diện:
+
+```mermaid
+flowchart LR
+  A[2-phone rig scan] --> B[fruit segmentation]
+  B --> C[coarse 3D shell]
+  C --> D[2.5D surface atlas]
+  D --> E[spike + hollow keypoints]
+  D --> F[seam/nut soc lines]
+  D --> G[texture descriptors]
+  E --> H[fruit fingerprint index]
+  F --> H
+  G --> H
+  I[buyer phone patch scan] --> J[local patch descriptors]
+  J --> K[search + geometric consistency]
+  H --> K
+  K --> L[same fruit / uncertain / fail]
+```
+
+Quan hệ identity và grading:
+
+```mermaid
+flowchart TB
+  A[Atlas 2.5D cua qua] --> B[Identity fingerprint]
+  A --> C[Seam/segment map]
+  B --> D[Match dung qua]
+  C --> E[Uoc luong so mui]
+  C --> F[Uoc luong mui day/lep]
+  G[Ground truth sau khi bo] --> F
+  G --> E
+```
+
 ## Pipeline Sau Này
 
 ### Farm/packing registration
@@ -248,4 +312,3 @@ outer scan + scale + weight
 - Checkerboard/Charuco in giấy.
 - Ruler/thanh đo scale.
 - Excel master template.
-
