@@ -1,23 +1,22 @@
-# Durian Fingerprint Lab
+# Dự Án Dấu Vân Sầu Riêng
 
-Private working notes for a durian scan dataset and verification MVP.
+Ghi chú riêng cho bản thử nghiệm quét sầu riêng, xác minh đúng quả và đánh giá chất lượng.
 
-## Main Docs
+## Tài Liệu Chính
 
-- [Durian MVP Blueprint](docs/durian-mvp-blueprint.md)
-- [Durian survey UI mock](docs/mocks/durian-survey-preview.html)
-- [Recording sample ID mock](docs/mocks/recording-sample-id-layout.html)
+- [Bản thiết kế thử nghiệm sầu riêng](docs/durian-mvp-blueprint.md)
+- [Mô phỏng giao diện khảo sát sầu riêng](docs/mocks/durian-survey-preview.html)
+- [Mô phỏng màn nhập mã mẫu khi quay](docs/mocks/recording-sample-id-layout.html)
 
-## Stray Scanner References
+## Tài Liệu Tham Chiếu Stray Scanner
 
-- [Data format](docs/stray-scanner/format.md)
-- [Export flow](docs/stray-scanner/export.md)
-- [Sample photo/export changes](docs/stray-scanner/sample-photo-export.md)
+- [Định dạng dữ liệu](docs/stray-scanner/format.md)
+- [Cách xuất dữ liệu](docs/stray-scanner/export.md)
+- [Thay đổi phần ảnh mẫu và file log](docs/stray-scanner/sample-photo-export.md)
 
-## Current Direction
+## Hướng Hiện Tại
 
-- Verify the exact fruit by natural spike/shell pattern.
-- Use LiDAR/depth only as coarse geometry support.
-- Use 2-phone MVP rig: one horizontal, one 45-degree upper view.
-- Keep Excel as the source of truth until the capture protocol stabilizes.
-
+- Xác minh đúng quả bằng dấu vân tự nhiên trên vỏ: gai, hõm, khe, vân màu.
+- LiDAR / đo sâu chỉ dùng phụ trợ cho dáng thô và tỷ lệ kích thước.
+- Bộ quét thử nghiệm dùng 2 điện thoại: một máy ngang, một máy chéo trên 45 độ.
+- Excel là nguồn dữ liệu chính cho tới khi quy trình lấy mẫu ổn định.

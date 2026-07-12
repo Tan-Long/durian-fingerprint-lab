@@ -1,72 +1,120 @@
-# Sample Photo Export Changes
+# Thay Đổi Phần Ảnh Mẫu Và File Log
 
-## Muc tieu
+## Mục Tiêu
 
-Khi cam dien thoai vao Mac, co the keo truc tiep thu muc `samples` sang may. Thu muc nay gom:
+Khi cắm điện thoại vào Mac, có thể kéo trực tiếp thư mục `samples` sang máy. Thư mục này gồm:
 
-- Anh mau `.jpg` da ghi thong tin len anh.
-- `samples_log.csv` voi moi anh la mot dong data.
-- `samples_log.xlsx`, hien dang ghi dang tab-separated text voi duoi `.xlsx` de Excel/Numbers import du lieu.
-- Khi xuat ZIP toan bo, app tach data theo folder ngay `ddMMyyyy`: video trong `01_videos`, anh mau trong `02_sample_photos`, va log rieng cua ngay do trong `03_sample_logs` (vi du `samples_log_24052026.csv` / `.xlsx`).
+- Ảnh mẫu `.jpg` đã ghi thông tin lên ảnh.
+- `samples_log.csv`, mỗi ảnh là một dòng dữ liệu.
+- `samples_log.xlsx`, hiện là file text phân tách bằng tab nhưng đặt đuôi `.xlsx` để Excel/Numbers mở được.
+- Khi xuất ZIP toàn bộ, ứng dụng tách dữ liệu theo thư mục ngày `ddMMyyyy`: video trong `01_videos`, ảnh mẫu trong `02_sample_photos`, log trong `03_sample_logs`.
 
-## Da thay doi
+Ví dụ file log theo ngày:
 
-- Anh mau duoc luu kem metadata render truc tiep len anh.
-- Man hinh chup sample bo truong `Ten mau`; chi giu `Sample ID` de dinh danh anh/data.
-- Man hinh chup sample co nut flag `*`; flag nay duoc ghi len anh, file data va duoc dung tiep cho thu muc video.
-- Mot `Sample ID` se giu nguyen cho toi khi co du 2 anh `Upslope` va `Downslope`; sau do app moi tang sang Sample ID tiep theo.
-- Ten file anh gom Sample ID, flag neu co, huong lay mau va timestamp, vi du `M-1.1*_Upslope_20260518_094500.jpg` va `M-1.1*_Downslope_20260518_094700.jpg`.
-- `Loai mau` la nut chon rieng `Dia y` / `Khong dia y`, khong tu dong lien ket vao `Sample ID`.
-- `Site` duoc dong bo tu GPS/reverse-geocode; neu chua co dia chi reverse-geocode thi hien toa do GPS tam thoi.
-- Neu GPS khong cap nhat duoc, `Site` tu dien site GPS gan nhat da luu; neu may chua tung co GPS thi ghi `Khong co GPS` de file data khong bi trong.
-- O `Site` van cho nhap tay; khi nguoi dung sua/noi dung khac rong, app giu gia tri nhap tay va khong ghi de bang GPS nua.
-- Ben duoi o `Site` co trang thai bao ro dang dung GPS, toa do GPS, site GPS gan nhat, khong co GPS, hoac site nhap tay.
-- `Huong lay mau` la nut chon rieng `Upslope` / `Downslope`.
-- `Huong camera nhin vao cay` va `Huong manh xam` duoc cap nhat theo heading realtime cua camera streaming; huong manh xam la huong nguoc lai voi huong camera, tuc huong be mat di ra moi truong.
-- Simulator co mock camera de xem UI va tao anh/data gia khi khong co iPhone.
-- Sau khi chup sample, app luu `Sample ID` hien tai de man hinh quay video tu dong dien vao o `Sample ID`; nguoi dung co the sua gia tri nay truoc khi quay, va gia tri cuoi cung trong o nhap se duoc gan vao ten thu muc video, vi du `cay_0001_1805_M-1.1*` neu sample co flag.
-- Moi thu muc video co them `sample_metadata.json` de map nguoc ve `Sample ID`, flag, loai mau va site.
-- Metadata tren anh gom:
-  - Ten file anh
-  - Sample ID
-  - Flag
-  - Loai mau
-  - Thoi gian chup
-  - Site
-  - Huong camera nhin vao cay
-  - Huong manh xam
-  - Huong lay mau
-  - GPS latitude va longitude
-  - Do chinh xac GPS
-  - Altitude
-  - Heading degree va huong cardinal
-  - Dia diem reverse-geocode
-- File data bay gio bat dau bang cot `File anh`, nen co the map dong data voi anh ma khong can soi lai noi dung tren anh.
-- Man hinh chinh co nut `Quan ly anh mau` de xem tung anh da chup, xoa mem vao `samples/recently_deleted`, khoi phuc anh da xoa gan day, hoac xoa vinh vien. Khi xoa mem, dong data duoc cat khoi `samples_log.csv` / `samples_log.xlsx` va luu trong `recently_deleted/deleted_samples_log.csv` de co the khoi phuc.
-- Trong `Quan ly anh mau`, nut `LiDAR` cho phep chon folder data quay co `sample_metadata.json` va `rgb.mp4`, keo qua cac frame video, roi tao lai anh mau tu frame dang chon. Anh khoi phuc tu LiDAR duoc ghi overlay/metadata `Recovered from LiDAR`, them vao log mau, va backup vao Photos neu app co quyen.
-- Khi xuat ZIP toan bo, moi folder ngay gom rieng `01_videos`, `02_sample_photos`, `03_sample_logs`; file `samples_log.csv` tong trong app duoc cat thanh cac log theo ngay dua tren timestamp cua `File anh` / `Ngay lay`.
-- Khi chup anh mau tren may that, app se xin quyen them anh vao Photos va luu them mot ban backup trong Photos cua iPhone.
-- File data ghi cac cot:
-  - File anh
-  - Sample-ID
-  - Flag
-  - Loai mau
-  - Ngay lay
-  - Lat
-  - Long
-  - GPS_accuracy_m
-  - Altitude_m
-  - Huong camera degree
-  - Huong camera cardinal
-  - Huong manh xam degree
-  - Huong manh xam cardinal
-  - Location
-  - Site
-  - Huong lay mau
-- Cac file `samples_log.csv` cu se duoc migrate sang thu tu cot moi khi app append/export sample data lan tiep theo.
+```text
+samples_log_24052026.csv
+samples_log_24052026.xlsx
+```
 
-## Ghi chu
+## Đã Thay Đổi
 
-- App van luu anh thanh file trong thu muc `samples`, khong nhung binary anh vao database, de viec copy thu muc qua Mac don gian va nhe hon.
-- Khong dung cot chung chung `Heading_degree` / `Heading_cardinal` nua vi de nham voi `Huong manh xam`; file data moi ghi degree/cardinal rieng cho camera va manh xam.
-- Cac dong cu chua co heading hoac GPS accuracy se de trong cac cot do sau migration.
+- Ảnh mẫu được lưu kèm thông tin hiển thị trực tiếp trên ảnh.
+- Màn hình chụp mẫu bỏ trường `Tên mẫu`, chỉ giữ `Sample ID` để định danh ảnh/data.
+- Màn hình chụp mẫu có nút cờ `*`; cờ này được ghi lên ảnh, file dữ liệu và dùng tiếp cho thư mục video.
+- Một `Sample ID` giữ nguyên cho tới khi có đủ 2 ảnh `Upslope` và `Downslope`; sau đó ứng dụng mới tăng sang `Sample ID` tiếp theo.
+- Tên file ảnh gồm `Sample ID`, cờ nếu có, hướng lấy mẫu và thời gian chụp.
+
+Ví dụ:
+
+```text
+M-1.1*_Upslope_20260518_094500.jpg
+M-1.1*_Downslope_20260518_094700.jpg
+```
+
+- `Loại mẫu` là nút chọn riêng `Địa y` / `Không địa y`, không tự động liên kết vào `Sample ID`.
+- `Site` được đồng bộ từ GPS và địa chỉ suy ra từ tọa độ. Nếu chưa có địa chỉ, ứng dụng hiển thị tọa độ GPS tạm thời.
+- Nếu GPS không cập nhật được, `Site` tự điền site GPS gần nhất đã lưu. Nếu máy chưa từng có GPS thì ghi `Không có GPS` để file dữ liệu không bị trống.
+- Ô `Site` vẫn cho nhập tay. Khi người dùng đã nhập tay, ứng dụng giữ nội dung đó và không ghi đè bằng GPS nữa.
+- Bên dưới ô `Site` có trạng thái báo rõ đang dùng GPS, tọa độ GPS, site GPS gần nhất, không có GPS, hoặc site nhập tay.
+- `Hướng lấy mẫu` là nút chọn riêng `Upslope` / `Downslope`.
+- `Hướng camera nhìn vào cây` và `Hướng mảnh xám` cập nhật theo hướng nhìn thời gian thực của máy quay. Hướng mảnh xám là hướng ngược lại với hướng máy quay, tức hướng bề mặt đi ra môi trường.
+- Trình giả lập có máy quay giả để xem giao diện và tạo ảnh/dữ liệu giả khi không có iPhone.
+- Sau khi chụp mẫu, ứng dụng lưu `Sample ID` hiện tại để màn hình quay video tự điền vào ô `Sample ID`. Người dùng vẫn sửa được trước khi quay.
+- Giá trị cuối cùng trong ô `Sample ID` được gắn vào tên thư mục video.
+
+Ví dụ:
+
+```text
+cay_0001_1805_M-1.1*
+```
+
+- Mỗi thư mục video có thêm `sample_metadata.json` để nối ngược về `Sample ID`, cờ, loại mẫu và địa điểm/site.
+
+## Thông Tin Ghi Trên Ảnh
+
+Thông tin ghi kèm trên ảnh gồm:
+
+- Tên file ảnh.
+- `Sample ID`.
+- Cờ.
+- Loại mẫu.
+- Thời gian chụp.
+- `Site`.
+- Hướng máy quay nhìn vào cây.
+- Hướng mảnh xám.
+- Hướng lấy mẫu.
+- GPS latitude và longitude.
+- Độ chính xác GPS.
+- Altitude.
+- Heading degree và hướng cardinal.
+- Địa điểm suy ra từ tọa độ GPS.
+
+## File Dữ Liệu
+
+File dữ liệu bây giờ bắt đầu bằng cột `File ảnh`, nên có thể nối dòng dữ liệu với ảnh mà không cần soi lại nội dung trên ảnh.
+
+Các cột đang ghi:
+
+```text
+File ảnh
+Sample-ID
+Flag
+Loại mẫu
+Ngày lấy
+Lat
+Long
+GPS_accuracy_m
+Altitude_m
+Hướng camera degree
+Hướng camera cardinal
+Hướng mảnh xám degree
+Hướng mảnh xám cardinal
+Location
+Site
+Hướng lấy mẫu
+```
+
+Các file `samples_log.csv` cũ sẽ được tự chuyển sang thứ tự cột mới khi ứng dụng ghi thêm hoặc xuất dữ liệu lần tiếp theo.
+
+## Quản Lý Ảnh Mẫu
+
+Màn hình chính có nút `Quản lý ảnh mẫu` để:
+
+- Xem từng ảnh đã chụp.
+- Xóa mềm vào `samples/recently_deleted`.
+- Khôi phục ảnh đã xóa gần đây.
+- Xóa vĩnh viễn.
+
+Khi xóa mềm, dòng dữ liệu bị cắt khỏi `samples_log.csv` / `samples_log.xlsx` và lưu trong `recently_deleted/deleted_samples_log.csv` để có thể khôi phục.
+
+Trong `Quản lý ảnh mẫu`, nút `LiDAR` cho phép chọn thư mục video có `sample_metadata.json` và `rgb.mp4`, kéo qua các khung hình, rồi tạo lại ảnh mẫu từ khung đang chọn. Ảnh khôi phục từ LiDAR được ghi thông tin `Recovered from LiDAR`, thêm vào log mẫu và sao lưu vào Photos nếu ứng dụng có quyền.
+
+Khi xuất ZIP toàn bộ, mỗi thư mục ngày gồm riêng `01_videos`, `02_sample_photos`, `03_sample_logs`. File `samples_log.csv` tổng trong ứng dụng được cắt thành các log theo ngày dựa trên thời gian của `File ảnh` / `Ngày lấy`.
+
+Khi chụp ảnh mẫu trên máy thật, ứng dụng xin quyền thêm ảnh vào Photos và lưu thêm một bản sao trong Photos của iPhone.
+
+## Ghi Chú
+
+- Ứng dụng vẫn lưu ảnh thành file trong thư mục `samples`, không nhúng ảnh vào cơ sở dữ liệu, để việc copy thư mục qua Mac đơn giản và nhẹ hơn.
+- Không dùng cột chung chung `Heading_degree` / `Heading_cardinal` nữa vì dễ nhầm với `Hướng mảnh xám`. File dữ liệu mới ghi độ/hướng riêng cho máy quay và mảnh xám.
+- Các dòng cũ chưa có heading hoặc GPS accuracy sẽ để trống các cột đó sau khi chuyển đổi.

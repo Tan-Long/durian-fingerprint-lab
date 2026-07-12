@@ -1,18 +1,62 @@
-# Exporting Data
+# Cách Xuất Dữ Liệu
 
-There are two ways of exporting the data from the device. The first way is to connect your phone to a computer with a lightning cable. The other option is through the iOS Files app.
+Có 2 cách lấy dữ liệu từ iPhone/iPad ra máy tính:
 
-## Exporting Using Cable
+1. Cắm cáp Lightning/USB-C vào Mac hoặc máy tính.
+2. Dùng ứng dụng Files trên iOS để chuyển thư mục sang iCloud Drive, AirDrop hoặc app khác.
 
-To access data collected using Stray Scanner, connect your iPhone or iPad to your computer using a lightning cable. Open Finder.app. Select your device from the sidebar. Click on the "Files" tab beneath your device description. Under "Stray Scanner", you should see one directory per dataset you have collected. Drag these to wherever you want to place them.
+## Xuất Bằng Cáp Trên Mac
 
-![How to access Stray Scanner data](/images/euclid.jpg)
-In this image, you can see the two datasets "ac1ed2228f" and "c26b6838a9". These are the folders you should drag to your desired destination.
+Các bước:
 
-On Windows, a similar process can be followed, but the device is accessed through iTunes.
+1. Cắm iPhone/iPad vào Mac.
+2. Mở Finder.
+3. Chọn thiết bị ở thanh bên trái.
+4. Mở tab **Files**.
+5. Tìm mục **Stray Scanner**.
+6. Kéo thư mục dữ liệu cần lấy ra vị trí lưu trên Mac.
 
-## Exporting Through the Files App
+Mỗi thư mục là một bộ dữ liệu đã quay/chụp. Nếu dùng Windows, thao tác tương tự nhưng thường phải mở qua iTunes.
 
-In the Files app, under "Browse > On My iPhone > Stray Scanner" you can see a folder for each recorded dataset. You can export a folder by moving it to your iCloud drive or share it with some other app.
+## Xuất Qua Ứng Dụng Files
 
-New LiDAR video folders are named from the active Sample ID and flag, for example `M-1.1*_video_20260524_121530`. Full ZIP export also normalizes older video folders with `sample_metadata.json` to this Sample ID based naming, groups files by day folders in `ddMMyyyy` format, and names the ZIP by data range, for example `StrayScanner_export_20052026_to_24052026.zip`. Inside each day folder, videos are exported under `01_videos`, sample photos under `02_sample_photos`, and that day's CSV/XLSX sample logs under `03_sample_logs` with names like `samples_log_24052026.csv`; other sample data is exported under `04_sample_data`.
+Trên iPhone/iPad:
+
+1. Mở **Files**.
+2. Vào **Browse > On My iPhone > Stray Scanner**.
+3. Chọn thư mục dữ liệu.
+4. Chuyển sang iCloud Drive, AirDrop hoặc chia sẻ sang app khác.
+
+## Tên Thư Mục Video Mới
+
+Thư mục video LiDAR mới lấy tên từ `Sample ID` đang dùng và dấu cờ nếu có.
+
+Ví dụ:
+
+```text
+M-1.1*_video_20260524_121530
+```
+
+Khi xuất ZIP toàn bộ, ứng dụng cũng chuẩn hóa các thư mục video cũ có `sample_metadata.json` sang kiểu tên theo `Sample ID`.
+
+Cấu trúc trong file ZIP:
+
+```text
+StrayScanner_export_20052026_to_24052026.zip
+└── 24052026/
+    ├── 01_videos/
+    ├── 02_sample_photos/
+    ├── 03_sample_logs/
+    │   ├── samples_log_24052026.csv
+    │   └── samples_log_24052026.xlsx
+    └── 04_sample_data/
+```
+
+Trong đó:
+
+| Thư mục | Nội dung |
+| --- | --- |
+| `01_videos` | Video LiDAR/RGB đã quay |
+| `02_sample_photos` | Ảnh mẫu đã chụp |
+| `03_sample_logs` | Bảng log CSV/XLSX theo ngày |
+| `04_sample_data` | Dữ liệu mẫu khác nếu có |

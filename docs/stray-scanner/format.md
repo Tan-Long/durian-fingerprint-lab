@@ -1,11 +1,24 @@
+# Định Dạng Dữ Liệu Stray Scanner
 
-# Data Specification
+Tài liệu này mô tả các file Stray Scanner ghi ra sau mỗi lần quay. Phần tên file/tên cột giữ nguyên tiếng Anh vì ứng dụng và các đoạn xử lý tự động đang dùng đúng các tên đó.
 
-This document describes the data format recorded by the app.
+Mỗi bộ dữ liệu nằm trong một thư mục riêng. Bản TestLab dùng kiểu đặt tên theo cây/mẫu, ví dụ:
 
-The collected datasets are each contained in a folder. TestLab builds use a tree/sample naming pattern, for example `cay_0001_1805_M-1.1*`, where `M-1.1` is the latest captured Sample ID and `*` marks a flagged sample/tree. A dataset folder has the following directory structure:
-
+```text
+cay_0001_1805_M-1.1*
 ```
+
+Trong đó:
+
+| Phần tên | Nghĩa |
+| --- | --- |
+| `cay_0001_1805` | Mã cây hoặc nhóm cây |
+| `M-1.1` | `Sample ID` mới nhất khi quay |
+| `*` | Mẫu/cây được đánh dấu cờ |
+
+## Cấu Trúc Thư Mục
+
+```text
 camera_matrix.csv
 odometry.csv
 imu.csv
@@ -17,7 +30,7 @@ confidence/
   - 000000.png
   - 000001.png
   - ...
-distortion/          (optional, present when lens distortion data is available)
+distortion/          (không phải lúc nào cũng có)
   - 000000.bin
   - 000001.bin
   - ...
@@ -25,46 +38,89 @@ sample_metadata.json
 rgb.mp4
 ```
 
-`rgb.mp4` is an HEVC encoded video, which contains the recorded data from the iPhone's camera.
+## File Chính
 
-The `depth/` directory contains the depth maps. One `.png` file per rgb frame. Each of these is a 16 bit grayscale png image. They have a height of 192 elements and width of 256 elements. The values are the measured depth in millimeters, for that pixel position. In [OpenCV](https://docs.opencv.org/4.5.5/), these can be read with `cv2.imread(depth_frame_path, -1)`.
+| File/thư mục | Nghĩa dễ hiểu |
+| --- | --- |
+| `rgb.mp4` | Video màu từ máy quay iPhone, mã hóa HEVC |
+| `depth/` | Bản đồ độ sâu cho từng khung hình |
+| `confidence/` | Độ tin cậy của từng điểm đo sâu |
+| `camera_matrix.csv` | Thông số máy quay ở khung cuối, giữ để tương thích với dữ liệu cũ |
+| `odometry.csv` | Vị trí, hướng nhìn và thông số máy quay theo từng khung hình |
+| `distortion/` | Bảng sửa méo ống kính, chỉ có khi máy cung cấp dữ liệu hiệu chuẩn |
+| `sample_metadata.json` | Nối thư mục video với `Sample ID` trên màn quay |
+| `imu.csv` | Dữ liệu gia tốc và xoay của điện thoại |
 
-The `confidence/` directory contains confidence maps corresponding to each depth map. They are grayscale png files encoding 192 x 256 element matrices. The values are either 0, 1 or 2. A higher value means a higher confidence.
+## `depth/`
 
-The `camera_matrix.csv` is a 3 x 3 matrix containing the [camera intrinsic parameters](https://en.wikipedia.org/wiki/Camera_resectioning#Intrinsic_parameters) from the final recorded frame. This file is kept for backwards compatibility; for per-frame intrinsics use the `fx`, `fy`, `cx`, `cy` columns in `odometry.csv`.
+Thư mục `depth/` có một file `.png` cho mỗi khung hình màu. Mỗi ảnh là ảnh xám 16-bit, kích thước 192 x 256. Giá trị pixel là khoảng cách đo được, đơn vị millimet.
 
-The `odometry.csv` file contains the camera pose and intrinsics for each frame. The first line is a header. The meaning of the fields are:
+Khi đọc bằng OpenCV:
 
-| Field | <div style="width: 500px">Meaning</div> |
-|---|---|
-| timestamp | Timestamp in seconds |
-| frame | Frame number to which this pose corresponds to e.g. `000005` |
-| x | x coordinate in meters from when the session was started |
-| y | y coordinate in meters from when the session was started |
-| z | z coordinate in meters from when the session was started |
-| qx | x component of quaternion representing camera pose rotation |
-| qy | y component of quaternion representing camera pose rotation |
-| qz | z component of quaternion representing camera pose rotation |
-| qw | w component of quaternion representing camera pose rotation |
-| fx | Horizontal focal length in pixels |
-| fy | Vertical focal length in pixels |
-| cx | Principal point x coordinate in pixels |
-| cy | Principal point y coordinate in pixels |
-| distortion_center_x | x coordinate of the lens distortion center in pixels (empty if unavailable) |
-| distortion_center_y | y coordinate of the lens distortion center in pixels (empty if unavailable) |
+```python
+cv2.imread(depth_frame_path, -1)
+```
 
-The `distortion/` directory contains per-frame lens distortion lookup tables, present only when the device exposes calibration data. Each `.bin` file is a raw array of little-endian `float32` values mapping radial distance from the distortion center to a correction factor. The number of entries is `file_size_in_bytes / 4`. The filenames correspond to the `frame` field in `odometry.csv`.
+## `confidence/`
 
-`sample_metadata.json` links the video dataset folder back to the Sample ID chosen on the recording screen. The field is auto-filled from the latest sample photo when available, but the user can edit it before recording. It stores the final `sample_id`, sample flag, sample type, site, and final dataset folder name, so the exported video folder can be matched to the sample photo CSV without inspecting the image manually.
+Thư mục `confidence/` có bản đồ độ tin cậy tương ứng với từng ảnh trong `depth/`. Mỗi điểm có giá trị:
 
-The `imu.csv` file contains timestamps, linear acceleration readings and angular rotation readings. The first line is a header. The meaning of the fields are:
+| Giá trị | Nghĩa |
+| --- | --- |
+| `0` | Tin cậy thấp |
+| `1` | Tin cậy vừa |
+| `2` | Tin cậy cao |
 
-| Field | <div style="width: 500px">Meaning</div> |
-|---|---|
-| timestamp | Timestamp in seconds |
-| a\_x | Acceleration in m/s^2 in x direction |
-| a\_y | Acceleration in m/s^2 in y direction |
-| a\_z | Acceleration in m/s^2 in z direction |
-| alpha\_x | Rotation in rad/s around the x-axis |
-| alpha\_y | Rotation in rad/s around the y-axis |
-| alpha\_z | Rotation in rad/s around the z-axis |
+## `odometry.csv`
+
+File này có một dòng cho mỗi khung hình. Các cột chính:
+
+| Cột | Nghĩa |
+| --- | --- |
+| `timestamp` | Thời gian tính bằng giây |
+| `frame` | Số khung hình, ví dụ `000005` |
+| `x` | Tọa độ x tính bằng mét từ lúc bắt đầu quay |
+| `y` | Tọa độ y tính bằng mét từ lúc bắt đầu quay |
+| `z` | Tọa độ z tính bằng mét từ lúc bắt đầu quay |
+| `qx` | Thành phần x của hướng xoay camera |
+| `qy` | Thành phần y của hướng xoay camera |
+| `qz` | Thành phần z của hướng xoay camera |
+| `qw` | Thành phần w của hướng xoay camera |
+| `fx` | Tiêu cự ngang tính theo pixel |
+| `fy` | Tiêu cự dọc tính theo pixel |
+| `cx` | Tọa độ x của tâm ảnh |
+| `cy` | Tọa độ y của tâm ảnh |
+| `distortion_center_x` | Tâm méo ống kính theo trục x, để trống nếu không có |
+| `distortion_center_y` | Tâm méo ống kính theo trục y, để trống nếu không có |
+
+## `distortion/`
+
+Thư mục này chứa bảng sửa méo ống kính theo từng khung hình. Mỗi file `.bin` là mảng số `float32` little-endian. Tên file khớp với cột `frame` trong `odometry.csv`.
+
+## `sample_metadata.json`
+
+File này giúp biết thư mục video thuộc về `Sample ID` nào mà không cần soi ảnh thủ công. Ứng dụng tự điền từ ảnh mẫu mới nhất nếu có, nhưng người quay vẫn sửa được trước khi bấm quay.
+
+Thông tin thường có:
+
+| Trường | Nghĩa |
+| --- | --- |
+| `sample_id` | Mã mẫu cuối cùng dùng khi quay |
+| `flag` | Có đánh dấu cờ hay không |
+| `sample_type` | Loại mẫu |
+| `site` | Địa điểm/site |
+| `dataset_folder` | Tên thư mục video cuối cùng |
+
+## `imu.csv`
+
+File này ghi gia tốc và tốc độ xoay của điện thoại theo thời gian.
+
+| Cột | Nghĩa |
+| --- | --- |
+| `timestamp` | Thời gian tính bằng giây |
+| `a_x` | Gia tốc theo trục x, đơn vị m/s^2 |
+| `a_y` | Gia tốc theo trục y, đơn vị m/s^2 |
+| `a_z` | Gia tốc theo trục z, đơn vị m/s^2 |
+| `alpha_x` | Tốc độ xoay quanh trục x, đơn vị rad/s |
+| `alpha_y` | Tốc độ xoay quanh trục y, đơn vị rad/s |
+| `alpha_z` | Tốc độ xoay quanh trục z, đơn vị rad/s |

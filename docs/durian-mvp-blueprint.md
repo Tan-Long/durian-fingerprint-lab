@@ -1,66 +1,94 @@
-# Durian MVP Blueprint
+# Bản Thiết Kế Thử Nghiệm Sầu Riêng
 
 ## Mục tiêu
 
-Xây hệ thống dữ liệu cho 2 bài toán cùng một pipeline lấy mẫu:
+Xây hệ thống dữ liệu cho 2 bài toán bằng cùng một quy trình lấy mẫu:
 
-1. **Identity verification**: xác minh đúng quả sầu riêng cụ thể, ưu tiên không phụ thuộc marker/QR.
-2. **Quality grading**: ước lượng số múi, múi đầy/lép, yield cơm ăn được, độ chín/hư hỏng từ scan ngoài vỏ.
+1. **Xác minh đúng quả**: kiểm tra quả đang quét có đúng là quả đã đăng ký hay không.
+2. **Đánh giá chất lượng**: ước lượng số múi, múi đầy/lép, tỷ lệ cơm ăn được, độ chín và lỗi hư hỏng từ hình ảnh ngoài vỏ.
 
-Nguyên tắc chính: **scan không phá quả để dự đoán**, nhưng **phá một subset mẫu để lấy ground truth**.
+Nguyên tắc chính: **quét không phá quả để dự đoán**, nhưng **bổ một phần mẫu để lấy dữ liệu kiểm chứng thật**.
+
+## Bản Tóm Tắt Dễ Hiểu
+
+- Mỗi quả sầu riêng có một “dấu vân” tự nhiên trên vỏ: gai, hõm, khe múi, vết nứt sọc, màu và vân vỏ.
+- Khi lấy mẫu, ta quay/chụp quả nhiều góc để tạo bản đồ bề mặt.
+- Sau này người mua chỉ cần quét một vùng nhỏ trên vỏ, hệ thống tìm xem vùng đó có khớp với quả đã lưu hay không.
+- Cùng dữ liệu này cũng giúp dự đoán số múi, múi lép/đầy và tỷ lệ cơm, nhưng phần này cần bổ một số quả để kiểm chứng.
+
+## Từ Điển Ngắn
+
+| Thuật ngữ trong tài liệu | Nghĩa dễ hiểu |
+| --- | --- |
+| MVP / bản thử nghiệm | Bản làm đủ dùng để lấy mẫu và kiểm chứng ý tưởng, chưa phải sản phẩm hoàn chỉnh |
+| Dấu vân bề mặt | Dấu hiệu riêng của gai, hõm, khe và vân vỏ trên từng quả |
+| Bản đồ bề mặt 2.5D | Bản đồ trải phẳng lớp vỏ, có thêm thông tin lồi/lõm tương đối |
+| Điểm gai | Vị trí gai nổi bật dùng để nhận diện |
+| Điểm hõm | Vùng lõm giữa cụm gai |
+| Khe/nứt sọc | Đường chia múi nhìn được trên vỏ |
+| Dữ liệu kiểm chứng thật | Dữ liệu sau khi bổ quả: số múi, cân cơm, cân hạt, cân vỏ |
+| Mâm xoay | Bàn quay quả khi quay video |
+| Mốc góc | Vạch/tem trên mâm để biết quả đang quay tới góc nào |
+| LiDAR / đo sâu | Cảm biến đo khoảng cách/độ sâu, dùng phụ trợ chứ không làm nguồn chính |
 
 ## Quyết Định Đã Chốt
 
 - Định danh ở mức **đúng quả cụ thể**, không chỉ đúng lô/vườn.
-- Đăng ký gốc có thể dùng rig/thiết bị riêng; người mua verify bằng điện thoại.
-- Fingerprint chính ưu tiên **pattern gai/vỏ từ RGB**, không dựa vào LiDAR mesh làm nguồn chính.
-- LiDAR/depth chỉ dùng phụ trợ: scale thô, pose, coarse shell, unwrap 2.5D.
-- Verify người mua nên quét **một vùng nhỏ bất kỳ** thay vì full 360.
-- Marker/QR là optional để tăng tốc hoặc quản lý dataset, không là bằng chứng chính.
-- Search ưu tiên full-search về mặt sản phẩm, nhưng backend nên scope theo batch/time/market trước để giảm false positive.
-- Dữ liệu gốc nên unwrap thành **atlas/map 2.5D** thay vì chỉ lưu ảnh rời.
-- MVP lấy mẫu phải capture cả identity và grading ngay từ đầu vì quả đã bổ thì không phục hồi được.
+- Đăng ký gốc có thể dùng bộ quét riêng; người mua kiểm tra bằng điện thoại.
+- Dấu vân chính ưu tiên **gai/vỏ từ video màu**, không dựa vào mô hình lưới 3D từ LiDAR làm nguồn chính.
+- LiDAR / đo sâu chỉ dùng phụ trợ: lấy tỷ lệ kích thước, dáng thô, vị trí tương đối.
+- Người mua nên quét **một vùng nhỏ bất kỳ** thay vì phải quét đủ 360 độ.
+- Tem/QR chỉ để quản lý hoặc tăng tốc, không phải bằng chứng chính.
+- Về sản phẩm nên cho phép tìm không cần QR, nhưng máy chủ vẫn nên ưu tiên theo lô/ngày/khu vực trước để giảm nhầm.
+- Dữ liệu gốc nên tạo **bản đồ bề mặt 2.5D** thay vì chỉ lưu ảnh rời.
+- Bản thử nghiệm lấy mẫu phải phục vụ cả xác minh đúng quả và đánh giá chất lượng ngay từ đầu vì quả đã bổ thì không phục hồi được.
 
-## Rig MVP Hà Nội
+## Bộ Quét Thử Nghiệm Ở Hà Nội
 
-Thiết kế tối thiểu để lấy mẫu repeatable:
+Thiết kế tối thiểu để lấy mẫu lặp lại ổn định:
 
-- 2 phone quay đồng thời.
-- `C1`: camera ngang nhìn thân quả; nếu có LiDAR thì dùng làm cam chính.
-- `C2`: camera chéo trên khoảng 45 độ để thấy cuống, đỉnh, khe múi.
-- Turntable làm bánh dùng được, dù quay không đều.
-- Dán `zero marker` và 8-12 tick quanh viền mâm để estimate góc quay thật từ video.
-- Lightbox/khung tản sáng bán kín.
+- 2 điện thoại quay đồng thời.
+- `C1`: máy ngang nhìn thân quả; nếu có LiDAR thì dùng làm máy chính.
+- `C2`: máy chéo trên khoảng 45 độ để thấy cuống, đỉnh và khe múi.
+- Mâm xoay làm bánh dùng được, dù quay không đều.
+- Dán một mốc góc `zero` và 8-12 vạch quanh viền mâm để ước lượng góc quay thật từ video.
+- Hộp sáng/khung tản sáng bán kín.
 - Nền xám matte trung tính.
-- Khóa focus, exposure, white balance trước mỗi batch.
-- Ưu tiên 4K/30fps; fallback 1080p/30fps nếu máy yếu, nóng, hoặc thiếu sáng.
+- Khóa nét, khóa sáng, khóa cân bằng trắng trước mỗi lượt lấy mẫu.
+- Ưu tiên 4K/30fps; nếu máy yếu, nóng hoặc thiếu sáng thì dùng 1080p/30fps.
 
-Không nên dùng top camera 90 độ làm stream chính. Top chỉ nên là ảnh phụ cuống/đáy nếu cần.
+Không nên dùng máy quay nhìn thẳng từ trên xuống 90 độ làm video chính. Góc trên 90 độ chỉ nên là ảnh phụ cho cuống/đáy nếu cần.
 
-## Calibration
+## Hiệu Chuẩn
 
-Mục tiêu thực tế: repeatability khoảng **3-5 mm**, không cần 1 mm ở MVP.
+Mục tiêu thực tế: quét lặp lại sai lệch khoảng **3-5 mm**, không cần đạt 1 mm ở bản thử nghiệm.
 
-Routine:
+Quy trình:
 
-- Mỗi ngày: checkerboard/Charuco calibration đầy đủ hơn.
-- Mỗi batch: quay ruler/scale object + marker mâm trong 2-3 giây đầu video.
-- Đồng bộ 2 phone bằng flash hoặc clap lúc bắt đầu, sau đó dùng marker mâm để nội suy góc.
+- Mỗi ngày: chụp bảng caro/Charuco để kiểm tra máy quay.
+- Mỗi lượt lấy mẫu: quay thước đo + mốc trên mâm trong 2-3 giây đầu video.
+- Đồng bộ 2 điện thoại bằng nháy đèn hoặc vỗ tay lúc bắt đầu, sau đó dùng mốc trên mâm để tính góc quay.
 
-Nguồn scale chính nên là calibrated camera rig; LiDAR chỉ là phụ trợ.
+Nguồn tỷ lệ kích thước chính nên đến từ bộ máy quay đã cố định và hiệu chuẩn. LiDAR chỉ là phụ trợ.
 
-## Sample ID Và Label
+## Mã Mẫu Và Tem
 
-Nên mua máy in nhiệt label nếu đi field nhiều quả theo cây/vườn.
+Nên mua máy in nhiệt nếu đi lấy nhiều quả theo cây/vườn.
 
-Label:
+Tem:
 
-- In QR/DataMatrix + text readable.
-- Dán cả túi/thùng và tag buộc quả để tránh mất dấu.
-- Không dán trực tiếp lên quả nếu ảnh hưởng scan.
-- Khi scan canonical: quay label 1-2 giây, tháo tag khỏi quả, rồi scan.
+- In QR/DataMatrix + chữ đọc được bằng mắt.
+- Dán cả túi/thùng và dây tem buộc quả để tránh mất dấu.
+- Không dán trực tiếp lên quả nếu ảnh hưởng phần quét.
+- Khi quét chính: quay tem 1-2 giây, tháo dây tem khỏi quả, rồi quét.
 
-Format video:
+Cấu trúc mã video:
+
+```text
+MA_VUON-MA_CAY-SO_QUA-LUOT_QUET-MAY_QUAY
+```
+
+Dạng ngắn đang dùng để đặt tên file:
 
 ```text
 FARM-TREE-FRUIT-PASS-CAM
@@ -77,70 +105,72 @@ DL01-T012-F003-B-C2
 
 Trong Excel, `fruit_id = DL01-T012-F003`.
 
-## Taxonomy Mẫu
+## Nhóm Mẫu
 
-### Field receipt sample
+### Mẫu ghi nhận nhanh tại nơi mua
 
-Mẫu scan nhanh ở nơi mua/vườn, chất lượng thấp, dùng làm evidence/logistics.
+Mẫu quét nhanh ở nơi mua/vườn, chất lượng thấp, dùng để giữ dấu vết nguồn và theo dõi vận chuyển.
 
 Tối thiểu:
 
-- video phone thô 15-30s,
+- video điện thoại thô 15-30s,
 - ảnh cuống,
 - ảnh đáy,
 - cân nặng nếu tiện.
 
-Không cần lightbox, mesh, atlas.
+Không cần hộp sáng, mô hình lưới 3D, hay bản đồ bề mặt.
 
-### Canonical rig sample
+### Mẫu quét chính bằng bộ quét
 
-Scan chính ở Hà Nội trước khi bổ, dùng cho identity và grading.
+Quét chính ở Hà Nội trước khi bổ, dùng cho xác minh đúng quả và đánh giá chất lượng.
 
-### Delayed destructive sample
+### Mẫu bổ kiểm chứng sau vận chuyển
 
-Quả mua/ship về Hà Nội rồi mới bổ. Vẫn có ground truth sau bổ.
+Quả mua/ship về Hà Nội rồi mới bổ. Vẫn có dữ liệu kiểm chứng thật sau khi bổ.
 
-Nếu chỉ scan được một mốc, ưu tiên scan ngay trước khi bổ.
+Nếu chỉ quét được một mốc, ưu tiên quét ngay trước khi bổ.
 
-### Non-destructive sample
+### Mẫu không bổ
 
-Scan/cân nhưng không bổ. Dùng cho identity, tracking, distribution shift; không dùng làm ground truth ruột.
+Quét/cân nhưng không bổ. Dùng cho xác minh đúng quả, theo dõi thay đổi theo thời gian; không dùng làm dữ liệu kiểm chứng ruột.
 
-## Protocol Mỗi Quả
+## Quy Trình Mỗi Quả
 
 ### Trước khi bổ
 
 1. Cân cả quả: `whole_fruit_weight`.
-2. Ghi metadata tối thiểu.
-3. Quay label bằng cả 2 phone.
-4. Tháo tag khỏi quả nếu che bề mặt.
-5. Scan pass A.
-6. Lật/đổi tư thế scan pass B.
-7. Optional pass C nếu vùng che còn nhiều.
+2. Ghi thông tin tối thiểu.
+3. Quay tem bằng cả 2 điện thoại.
+4. Tháo dây tem khỏi quả nếu che bề mặt.
+5. Quét lượt A.
+6. Lật/đổi tư thế quét lượt B.
+7. Lượt C không bắt buộc, chỉ làm nếu vùng bị che còn nhiều.
 8. Chụp ảnh phụ: cuống, đáy, 4 mặt nếu tiện.
 
-Với 1 camera thì nên 3 pass, nhưng với 2 camera ngang + chéo, bắt đầu bằng 2 pass là đủ cho MVP.
+Với 1 máy quay thì nên 3 lượt. Với 2 máy quay ngang + chéo, bắt đầu bằng 2 lượt là đủ cho bản thử nghiệm.
 
 ### Sau khi bổ
 
 1. Chụp mặt cắt toàn quả.
-2. Chụp từng múi/segment.
+2. Chụp từng múi/khoang.
 3. Ghi `segment_count`.
 4. Cân:
    - `shell_weight`,
    - `edible_flesh_weight`,
    - `seed_weight`.
-5. Label từng múi:
+5. Ghi nhãn từng múi:
    - đầy,
    - vừa,
    - lép,
    - hư/thối/sâu.
 
-Nên có một mốc định hướng dataset, ví dụ chấm mực thực phẩm tại khe số 0 trước khi bổ. Khi bổ vẫn ghi thủ công theo thứ tự múi quanh cuống.
+Nên có một mốc định hướng dữ liệu, ví dụ chấm mực thực phẩm tại khe số 0 trước khi bổ. Khi bổ vẫn ghi thủ công theo thứ tự múi quanh cuống.
 
-## Excel Master Tối Thiểu
+## Bảng Excel Chính Tối Thiểu
 
-Mỗi video/pass một row hoặc mỗi quả một row kèm links folder đều được. MVP nên bắt đầu đơn giản: mỗi video/pass một row, có chung `fruit_id`.
+Mỗi video/lượt một dòng hoặc mỗi quả một dòng kèm đường dẫn thư mục đều được. Bản thử nghiệm nên bắt đầu đơn giản: mỗi video/lượt một dòng, có chung `fruit_id`.
+
+Tên cột giữ dạng tiếng Anh ngắn để dễ nhập máy và xử lý tự động về sau. Bảng bên dưới giải nghĩa từng cột bằng tiếng Việt.
 
 Các cột tối thiểu:
 
@@ -165,6 +195,29 @@ segment_labels
 notes
 ```
 
+Nghĩa nhanh của các cột:
+
+| Cột | Nghĩa |
+| --- | --- |
+| `sample_id` | Mã video/lượt quét cụ thể |
+| `fruit_id` | Mã quả, dùng chung cho nhiều video của cùng một quả |
+| `farm_id` | Mã vườn |
+| `tree_id` | Mã cây |
+| `fruit_seq` | Số thứ tự quả trên cây/lô |
+| `pass` | Lượt quét A/B/C |
+| `camera_id` | Máy quay C1/C2 |
+| `capture_date` | Ngày giờ lấy dữ liệu |
+| `source_or_seller` | Người bán/nguồn lấy mẫu |
+| `location_note` | Ghi chú địa điểm |
+| `status` | Trạng thái mẫu |
+| `whole_fruit_weight` | Cân nặng cả quả trước khi bổ |
+| `shell_weight` | Cân nặng vỏ sau khi bổ |
+| `edible_flesh_weight` | Cân nặng cơm ăn được |
+| `seed_weight` | Cân nặng hạt |
+| `segment_count` | Số múi/khoang |
+| `segment_labels` | Nhãn từng múi: đầy/vừa/lép/hư |
+| `notes` | Ghi chú tự do |
+
 `status` gợi ý:
 
 ```text
@@ -175,140 +228,150 @@ opened_labeled
 non_destructive
 ```
 
-## App Stray Scanner
+Nghĩa của `status`:
 
-Repo: `/Users/jin/scanner`
+| Trạng thái | Nghĩa |
+| --- | --- |
+| `field_only` | Chỉ có dữ liệu nhanh tại nơi mua/vườn |
+| `received` | Quả đã về nơi xử lý nhưng chưa quét chính |
+| `rig_scanned` | Đã quét bằng bộ quét chính |
+| `opened_labeled` | Đã bổ và đã ghi nhãn dữ liệu thật bên trong |
+| `non_destructive` | Mẫu không bổ, chỉ có dữ liệu không phá quả |
 
-Có thể dùng ngay cho MVP:
+## Ứng Dụng Stray Scanner
 
-- Màn record có `Sample ID` editable.
-- Folder video đặt theo Sample ID.
-- `sample_metadata.json` link dataset với sample.
-- Có export CSV/XLSX log, nhưng `.xlsx` hiện là TSV fallback mở được bằng Excel.
+Mã nguồn ứng dụng hiện ở: `/Users/jin/scanner`
+
+Có thể dùng ngay cho bản thử nghiệm:
+
+- Màn quay có `Sample ID` sửa được.
+- Thư mục video đặt theo Sample ID.
+- `sample_metadata.json` nối thư mục video với mã mẫu.
+- Có xuất CSV/XLSX log, nhưng `.xlsx` hiện là file text dạng bảng mở được bằng Excel, chưa phải file Excel chuẩn hoàn toàn.
 
 Khuyến nghị trước mắt:
 
-- Chưa sửa app thành form sầu riêng.
-- Encode metadata chính vào Sample ID.
-- Excel master giữ toàn bộ field.
-- Sửa app sau khi protocol lấy mẫu ổn định.
+- Chưa sửa ứng dụng thành biểu mẫu sầu riêng.
+- Ghi thông tin chính vào Sample ID.
+- Bảng Excel chính giữ toàn bộ trường dữ liệu.
+- Sửa ứng dụng sau khi quy trình lấy mẫu ổn định.
 
-## Minh Họa Feature Map
+## Minh Họa Bản Đồ Dấu Hiệu Trên Vỏ
 
-Mục tiêu của map nhận diện không phải là dựng mesh gai thật sắc, mà là tạo **atlas 2.5D** có đủ pattern tự nhiên để match lại cùng một quả.
+Mục tiêu của bản đồ nhận diện không phải là dựng mô hình lưới 3D gai thật sắc, mà là tạo **bản đồ bề mặt 2.5D** có đủ dấu hiệu tự nhiên để nhận ra cùng một quả.
 
-Feature nên lưu:
+Dấu hiệu nên lưu:
 
-- `spike_keypoints`: đỉnh gai, cụm gai nổi bật.
-- `hollow_keypoints`: hõm giữa cụm gai.
-- `seam_lines`: khe/nứt sọc chạy từ cuống xuống thân.
-- `texture_patches`: màu/vân vỏ cục bộ.
-- `coarse_shape`: dáng quả, vùng phồng/lõm, vị trí cuống/đáy.
+- Điểm gai nổi bật, tên máy đọc được: `spike_keypoints`.
+- Điểm hõm giữa cụm gai, tên máy đọc được: `hollow_keypoints`.
+- Đường khe/nứt sọc chạy từ cuống xuống thân, tên máy đọc được: `seam_lines`.
+- Mảng màu/vân vỏ cục bộ, tên máy đọc được: `texture_patches`.
+- Dáng quả thô, vùng phồng/lõm, vị trí cuống/đáy, tên máy đọc được: `coarse_shape`.
 
-Concept map:
+Sơ đồ ý tưởng:
 
 ```text
-          cuong / stem
+          cuống
               *
              /|\
-            / | \          seam_lines = khe/nut soc
+            / | \          đường kẻ = khe/nứt sọc
       -----/--|--\-----
      /  ^  ^  |  ^  ^  \
-    |  o  ^  o|^  o  ^  |   ^ = spike keypoint
-    | ^  o  ^ | o  ^  o |   o = hollow/texture patch
-    |----------+---------|   + = atlas anchor around stem axis
+    |  o  ^  o|^  o  ^  |   ^ = điểm gai
+    | ^  o  ^ | o  ^  o |   o = điểm hõm / vân vỏ
+    |----------+---------|   + = mốc quanh trục cuống
     |  o  ^  o|^  o  ^  |
      \  ^  o  |  o  ^  /
       -----\--|--/-----
             \ | /
              \|/
-             day / base
+             đáy
 ```
 
-Data flow nhận diện:
+Luồng nhận diện:
 
 ```mermaid
 flowchart LR
-  A[2-phone rig scan] --> B[fruit segmentation]
-  B --> C[coarse 3D shell]
-  C --> D[2.5D surface atlas]
-  D --> E[spike + hollow keypoints]
-  D --> F[seam/nut soc lines]
-  D --> G[texture descriptors]
-  E --> H[fruit fingerprint index]
+  A[Quét bằng 2 điện thoại] --> B[Tách quả khỏi nền]
+  B --> C[Dựng dáng quả thô]
+  C --> D[Bản đồ bề mặt 2.5D]
+  D --> E[Điểm gai và điểm hõm]
+  D --> F[Đường khe và nứt sọc]
+  D --> G[Màu và vân vỏ]
+  E --> H[Kho dấu vân từng quả]
   F --> H
   G --> H
-  I[buyer phone patch scan] --> J[local patch descriptors]
-  J --> K[search + geometric consistency]
+  I[Người mua quét một vùng vỏ] --> J[Dấu hiệu của vùng vừa quét]
+  J --> K[Tìm kiếm và kiểm tra hình học]
   H --> K
-  K --> L[same fruit / uncertain / fail]
+  K --> L[Đúng quả / chưa chắc / sai quả]
 ```
 
-Quan hệ identity và grading:
+Quan hệ giữa xác minh đúng quả và đánh giá chất lượng:
 
 ```mermaid
 flowchart TB
-  A[Atlas 2.5D cua qua] --> B[Identity fingerprint]
-  A --> C[Seam/segment map]
-  B --> D[Match dung qua]
-  C --> E[Uoc luong so mui]
-  C --> F[Uoc luong mui day/lep]
-  G[Ground truth sau khi bo] --> F
+  A[Bản đồ bề mặt 2.5D] --> B[Dấu vân nhận diện]
+  A --> C[Bản đồ khe và múi]
+  B --> D[Kiểm tra đúng quả]
+  C --> E[Ước lượng số múi]
+  C --> F[Ước lượng múi đầy hoặc lép]
+  G[Dữ liệu thật sau khi bổ] --> F
   G --> E
 ```
 
-## Pipeline Sau Này
+## Luồng Xử Lý Sau Này
 
-### Farm/packing registration
+### Đăng ký quả tại vườn/nhà đóng gói
 
 ```text
-multi-view RGB/depth coarse
--> fruit segmentation
--> coarse 3D shell
--> unwrap surface atlas 2.5D
--> detect gai/hom/texture keypoints
--> store descriptors + provenance
+video nhiều góc + dữ liệu đo sâu thô nếu có
+-> tách quả khỏi nền
+-> dựng dáng quả thô
+-> trải bề mặt vỏ thành bản đồ 2.5D
+-> tìm điểm gai, điểm hõm, khe, vân vỏ
+-> lưu dấu vân bề mặt + thông tin nguồn gốc
 ```
 
-### Buyer verify
+### Người mua kiểm tra
 
 ```text
-phone scan 10-20s patch
--> reconstruct local patch/features
--> search scoped/global index
--> geometric consistency check
--> confidence: same fruit / uncertain / fail
+điện thoại quét 10-20s một vùng vỏ
+-> lấy dấu hiệu của vùng vừa quét
+-> tìm trong kho dữ liệu
+-> kiểm tra có khớp về hình học không
+-> kết quả: đúng quả / chưa chắc / sai quả
 ```
 
-### Quality grading
+### Đánh giá chất lượng
 
 ```text
-outer scan + scale + weight
--> seam/khe detection
--> segment map
--> shape/fullness features
--> model predicts segment fullness, yield, ripeness, defects
--> evaluate against destructive ground truth subset
+quét vỏ + kích thước + cân nặng
+-> tìm khe múi trên vỏ
+-> lập bản đồ từng múi
+-> tính dáng quả và độ phồng từng múi
+-> dự đoán múi đầy/lép, tỷ lệ cơm, độ chín, lỗi hư hỏng
+-> so với dữ liệu thật sau khi bổ
 ```
 
 ## Không Làm Ngay
 
-- Không cố dựng TSDF mesh sắc gai làm fingerprint chính.
-- Không phụ thuộc marker/QR để chứng minh đúng quả.
-- Không dựng app/database riêng trước khi protocol ổn.
-- Không cần motor turntable chính xác ngay; marker góc đủ cho MVP.
-- Không cần multi-camera rig 4 camera ngay.
+- Không cố dựng mô hình lưới 3D sắc gai làm dấu vân chính.
+- Không phụ thuộc mốc/QR để chứng minh đúng quả.
+- Không dựng ứng dụng/cơ sở dữ liệu riêng trước khi quy trình ổn.
+- Không cần motor mâm xoay chính xác ngay; mốc góc đủ cho bản thử nghiệm.
+- Không cần bộ 4 máy quay ngay.
 
-## Checklist Mua/Dựng MVP
+## Danh Sách Mua/Dựng Bản Thử Nghiệm
 
-- 2 phone.
-- Tripod/mount chắc cho 2 phone.
-- Turntable làm bánh.
-- Decal marker/tick cho mâm.
-- Đèn LED + vật liệu tản sáng/lightbox.
+- 2 điện thoại.
+- Chân đỡ/giá kẹp chắc cho 2 điện thoại.
+- Mâm xoay làm bánh.
+- Decal làm mốc/vạch cho mâm.
+- Đèn LED + vật liệu tản sáng/hộp sáng.
 - Nền xám matte.
 - Cân.
-- Máy in nhiệt label + tem.
-- Checkerboard/Charuco in giấy.
-- Ruler/thanh đo scale.
-- Excel master template.
+- Máy in nhiệt + tem.
+- Bảng caro/Charuco in giấy.
+- Thước đo kích thước.
+- File Excel mẫu.
