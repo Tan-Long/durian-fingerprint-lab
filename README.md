@@ -5,6 +5,7 @@ Ghi chú riêng cho bản thử nghiệm quét sầu riêng, xác minh đúng qu
 ## Tài Liệu Chính
 
 - [Bản thiết kế thử nghiệm sầu riêng](docs/durian-mvp-blueprint.md)
+- [Quy trình xử lý mẫu sầu riêng](docs/durian-sample-processing-procedure.md)
 - [Mô phỏng giao diện khảo sát sầu riêng](docs/mocks/durian-survey-preview.html)
 - [Mô phỏng màn nhập mã mẫu khi quay](docs/mocks/recording-sample-id-layout.html)
 
