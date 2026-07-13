@@ -30,6 +30,8 @@ Nguyên tắc chính: **quét không phá quả để dự đoán**, nhưng **b�
 | Mâm xoay | Bàn quay quả khi quay video |
 | Mốc góc | Vạch/tem trên mâm để biết quả đang quay tới góc nào |
 | LiDAR / đo sâu | Cảm biến đo khoảng cách/độ sâu, dùng phụ trợ chứ không làm nguồn chính |
+| Grade thương mại | Nhãn A/B/dạt do người mua/người bán đang dùng; chỉ dùng để đối chiếu với dữ liệu đo thật |
+| Tỷ lệ cơm ăn được | `edible_flesh_weight / whole_fruit_weight`, tính sau khi bổ |
 
 ## Quyết Định Đã Chốt
 
@@ -41,6 +43,8 @@ Nguyên tắc chính: **quét không phá quả để dự đoán**, nhưng **b�
 - Tem/QR chỉ để quản lý hoặc tăng tốc, không phải bằng chứng chính.
 - Về sản phẩm nên cho phép tìm không cần QR, nhưng máy chủ vẫn nên ưu tiên theo lô/ngày/khu vực trước để giảm nhầm.
 - Dữ liệu gốc nên tạo **bản đồ bề mặt 2.5D** thay vì chỉ lưu ảnh rời.
+- Tách **grade thương mại** khỏi dữ liệu đo thật; MVP chỉ ghi lại grade và lý do chấm để so với số múi/cân cơm sau khi bổ.
+- Dấu vân nên có thời hạn hiệu lực tạm 3-6 tháng, đủ cho vòng đời từ vườn tới người mua và giúp kho tìm kiếm không phình vô hạn.
 - Bản thử nghiệm lấy mẫu phải phục vụ cả xác minh đúng quả và đánh giá chất lượng ngay từ đầu vì quả đã bổ thì không phục hồi được.
 
 ## Bộ Quét Thử Nghiệm Ở Hà Nội
@@ -134,12 +138,23 @@ Nếu chỉ quét được một mốc, ưu tiên quét ngay trước khi bổ.
 
 Quét/cân nhưng không bổ. Dùng cho xác minh đúng quả, theo dõi thay đổi theo thời gian; không dùng làm dữ liệu kiểm chứng ruột.
 
+## Nhãn Grade Thương Mại
+
+MVP chưa cần tự động chấm A/B/dạt ngay. Việc cần làm trước là ghi lại cách con người đang chấm để sau này so với dữ liệu thật.
+
+Ghi tối thiểu:
+
+- `commercial_grade`: `A`, `B`, `offgrade`.
+- `grade_reason`: tròn, kích thước, 2.7 múi to, 2.5 múi, kem, đồ, lỗi khác.
+
+Không coi grade thương mại là nhãn đúng tuyệt đối. Dữ liệu kiểm chứng chính vẫn là `segment_count`, `segment_labels`, `edible_flesh_weight`, `seed_weight`, `shell_weight`.
+
 ## Quy Trình Mỗi Quả
 
 ### Trước khi bổ
 
 1. Cân cả quả: `whole_fruit_weight`.
-2. Ghi thông tin tối thiểu.
+2. Ghi thông tin tối thiểu, gồm `commercial_grade` nếu người bán/người mua đã chấm.
 3. Quay tem bằng cả 2 điện thoại.
 4. Tháo dây tem khỏi quả nếu che bề mặt.
 5. Quét lượt A.
@@ -186,6 +201,8 @@ capture_date
 source_or_seller
 location_note
 status
+commercial_grade
+grade_reason
 whole_fruit_weight
 shell_weight
 edible_flesh_weight
@@ -210,6 +227,8 @@ Nghĩa nhanh của các cột:
 | `source_or_seller` | Người bán/nguồn lấy mẫu |
 | `location_note` | Ghi chú địa điểm |
 | `status` | Trạng thái mẫu |
+| `commercial_grade` | Grade thương mại đang được người bán/người mua chấm: A/B/offgrade |
+| `grade_reason` | Lý do chấm grade: dáng, kích thước, số múi, kem/đồ, lỗi khác |
 | `whole_fruit_weight` | Cân nặng cả quả trước khi bổ |
 | `shell_weight` | Cân nặng vỏ sau khi bổ |
 | `edible_flesh_weight` | Cân nặng cơm ăn được |
@@ -353,6 +372,16 @@ quét vỏ + kích thước + cân nặng
 -> dự đoán múi đầy/lép, tỷ lệ cơm, độ chín, lỗi hư hỏng
 -> so với dữ liệu thật sau khi bổ
 ```
+
+## Ca Kiểm Thử Chống Tráo Quả
+
+MVP xác minh đúng quả cần chạy được các ca nhỏ này trước khi nghĩ tới cơ sở dữ liệu lớn:
+
+- QR đúng + quả đúng: trả `đúng quả`.
+- QR đúng + quả khác: trả `sai quả/tráo quả`.
+- Không có QR + quả đã đăng ký: ưu tiên tìm theo lô/ngày/khu vực trước, sau đó mới mở rộng.
+- Không có QR + quả chưa đăng ký: trả `không tìm thấy/chưa chắc`, không ép khớp vào quả gần giống nhất.
+- Cùng quả sau vận chuyển vài ngày: cho phép màu, vết trầy, gai gãy thay đổi nhỏ; hình học gai/khe vẫn phải khớp.
 
 ## Không Làm Ngay
 
