@@ -171,6 +171,15 @@ They explicitly selected "Duyệt trên máy này trước" (local-machine revie
   Destination is the source root's sibling `Hoc_theo_nhan_qua_20260930`.
   Details: `docs/plans/evidence/durian-two-track-pilot/chamber-sort.md`.
   User label acceptance is still pending; the web review pack remains unchanged.
+- Follow-up authorized by user: remove camera subfolders and name copies by
+  fruit/visible locule (`n1v1c1_h1`), keeping original formats. Duplicate labels
+  get `_02` etc.; unknown locules use `h_chua_ro`, unknown fruits retain their
+  source basename in the unresolved groups. Preserve old organized layout in
+  a sibling backup before rebuilding; keep source/camera provenance in ledger.
+- Flat-layout follow-up completed: all 427 byte-verified copies now sit
+  directly in their fruit/unresolved groups; 15 duplicate suffixes and one
+  `h_chua_ro` preserve uncertainty and avoid overwrite. 46 local tests passed.
+  Old layout retained in sibling `Hoc_theo_nhan_qua_20260930_truoc_doi_ten`.
 
 ## Risks And Recovery
 

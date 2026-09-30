@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Review label crops, then copy originals into fruit folders without changing sources."""
 import argparse
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 import csv
 import hashlib
@@ -80,6 +81,7 @@ def copy_reviewed(inventory, reviews, destination):
     if len(records) != len(reviews) or set(reviews) != {r['relative_path'] for r in records}:
         raise ValueError('Review must account for every original exactly once')
     plan = []
+    names = Counter()
     for record in records:
         relative_source = Path(record['relative_path'])
         if relative_source.is_absolute() or '..' in relative_source.parts:
@@ -98,10 +100,17 @@ def copy_reviewed(inventory, reviews, destination):
             raise ValueError('Visual reading requires a fruit code')
         if not isinstance(review.get('note'), str) or not review['note'].strip():
             raise ValueError('Every photo needs a visual evidence/ambiguity note')
+        locule = review.get('locule')
+        if locule is not None and (not isinstance(locule, str) or not re.fullmatch(r'H[1-9][0-9]*', locule)):
+            raise ValueError('Locule must be a visibly read H number or null')
         if digest(path) != record['sha256']:
             raise ValueError(f'Source content changed: {path}')
         group = code or ('_KHONG_CO_NHAN_QUA' if status == 'not_labelled' else '_CHUA_RO_NHAN')
-        relative = Path(group) / record['relative_path']
+        stem = f"{code.lower()}_{locule.lower() if locule else 'h_chua_ro'}" if code else path.stem.lower()
+        names[(group, stem)] += 1
+        number = names[(group, stem)]
+        suffix = f'_{number:02d}' if number > 1 else ''
+        relative = Path(group) / f'{stem}{suffix}{path.suffix.lower()}'
         plan.append((record, review, path, relative))
     destination.mkdir(parents=True, exist_ok=False)
     rows = []
@@ -123,7 +132,9 @@ def copy_reviewed(inventory, reviews, destination):
         writer.writerows(rows)
     (destination / 'README.txt').write_text(
         'Bản sao sắp xếp theo nhãn quả đọc trực tiếp trên ảnh; chưa phải nhãn đã được người dùng duyệt.\n'
-        'Giữ nguyên tên ảnh và thư mục máy chụp bên trong mỗi mã quả. Không sửa/move ảnh gốc.\n'
+        'Ảnh nằm trực tiếp trong thư mục mã quả, tên dạng n1v1c1_h1.jpg; giữ nguyên định dạng ảnh.\n'
+        'Ảnh trùng nhãn có hậu tố _02, _03...; chưa đọc rõ hộc dùng h_chua_ro, không tự đoán H.\n'
+        'Tên file gốc và máy chụp được giữ trong DOI_CHIEU_ANH; không sửa/move ảnh gốc.\n'
         'Ảnh mờ/mâu thuẫn nằm ở _CHUA_RO_NHAN; ảnh không thấy mã quả nằm ở _KHONG_CO_NHAN_QUA.\n'
         'Không suy ra số hộc hay số múi từ số ảnh. DOI_CHIEU_ANH lưu nguồn, hash và ghi chú cho từng file.\n', encoding='utf-8')
     print(f'Copied and hash-verified {len(rows)} photos to {destination}')

@@ -155,8 +155,12 @@ python3 -B -m scripts.organize_chamber_photos copy \
   --destination '/Volumes/SoilTECH/Ảnh chụp sầu riêng/Hoc_theo_nhan_qua_20260930'
 ```
 
-Bộ mới giữ cấu trúc `mã_quả/máy_chụp/tên_file_gốc`, cùng nhóm chưa rõ/không có
-nhãn và bảng `DOI_CHIEU_ANH.csv/json`. SHA-256 được đối chiếu trước/sau sao chép;
+Bộ mới giữ cấu trúc `N1V1C1/n1v1c1_h1.jpg`, không có cấp thư mục máy chụp.
+Giữ nguyên định dạng ảnh; trùng nhãn dùng `_02`, `_03`...; chưa rõ hộc dùng
+`h_chua_ro`. Ảnh chưa rõ mã quả dùng tên file nguồn viết thường trong nhóm
+chưa rõ/không có nhãn.
+Tên file và máy chụp gốc vẫn có trong `DOI_CHIEU_ANH.csv/json`.
+SHA-256 được đối chiếu trước/sau sao chép;
 không ghi đè thư mục cũ. Nếu lỗi giữa chừng, giữ bộ dở để kiểm tra và dùng đích
 mới khi chạy lại. Đây là phân nhóm theo nhãn nhìn thấy, **chưa phải người dùng
 duyệt nhãn hay xác nhận số hộc/múi**. Kiểm thử:

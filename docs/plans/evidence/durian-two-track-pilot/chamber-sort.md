@@ -76,3 +76,33 @@ workbook/manifest hashes also match the previous review pack. Final ledger
 SHA-256: `0aba6fca3eb9b5f436a1437acb0a94f01ac6f1998c0323f8c4ee23faf30cd081`.
 Every exported record remains `user_approved:false`. Label/user acceptance
 remains open; this new grouping has not been substituted into the web pack.
+
+## Follow-up: Flat Fruit Folders and Label Filenames
+
+User explicitly requested removing the camera level and renaming each photo
+to its fruit/locule label, e.g. `N1V1C1/n1v1c1_h1.jpg`. The copier now retains
+source format and records original camera/filename in the ledger instead of
+the directory structure. Fifteen repeated fruit/locule labels receive `_02`
+suffixes; the single readable-fruit/unclear-locule photo uses `h_chua_ro`.
+Unresolved fruit photos retain their source basename, lowercased, in the two
+unresolved groups. No missing H values or label corrections are invented.
+
+Before changing layout, every existing copy and the old ledger were checked
+against their recorded hashes. The complete old directory was preserved at
+`Hoc_theo_nhan_qua_20260930_truoc_doi_ten` beside the requested destination;
+the current destination is rebuilt from unchanged originals with the same
+427 review records. Old backup ledger paths describe the pre-rename root;
+restore that root or substitute the backup prefix to locate those old files.
+No original photo or prior copy is deleted.
+
+Added regression proof covers flat paths, lowercase label names, duplicate
+H1 across JPG/HEIC without overwrite, unknown H naming, rejected invalid
+locules, byte preservation and original filename/camera provenance.
+21 data/server/organization tests, 11 viewer/matcher tests and 14 projection
+tests passed (46 total). Physical copy completed: 427/427 hashes verified.
+Independent enumeration confirmed 427 unique two-level image paths (no camera
+subfolders), 978,050,786 bytes, 15 `_02` suffixes and one `h_chua_ro` filename.
+The user's N1V1C1 example now contains exactly `n1v1c1_h1.jpg` through
+`n1v1c1_h4.jpg`, with no inferred H5.
+New ledger SHA-256:
+`f457bdea8dd5cc92c63e967dbbb8c97198092e278f7ff170d69dd729a3958c3a`.
