@@ -8,7 +8,7 @@ import unittest
 
 from scripts import test_audit_morphology as fixtures
 from scripts.audit_morphology import audit
-from scripts.build_label_review import build_pack, sha256, write_pack
+from scripts.build_label_review import build_pack, explicit_ocr_identity, sha256, write_pack
 
 
 class LabelReviewTests(unittest.TestCase):
@@ -139,6 +139,38 @@ class LabelReviewTests(unittest.TestCase):
             self.assertEqual(Path(identity["media"][1]["source_path"]).name, "inspected.jpg")
             count = next(c for c in after["cases"] if c["id"] == "counts-N1V1C1")
             self.assertEqual(Path(count["media"][0]["source_path"]).name, "inspected.jpg")
+
+    def test_archive_preserves_unassigned_photos_and_explicit_h6_is_only_candidate(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            args = self.fixture(root)
+            with args[3].open("a", newline="") as handle:
+                writer = csv.writer(handle)
+                for name, content, text in [
+                    ("h6.jpg", b"six", "N1 - V1 - C1 - H6"),
+                    ("h6-copy.jpg", b"six", "N1 - V1 - C1 - H6"),
+                    ("unreadable.jpg", b"unknown", "không đọc được mã"),
+                    ("ambiguous.jpg", b"ambiguous", "N1-V1-C1-H6 | N2-V4-C3-H2"),
+                ]:
+                    path = root / "source" / name
+                    path.write_bytes(content)
+                    writer.writerow(["", "", str(path), text, "CAN_DUYET_NHAN"])
+            pack = build_pack(*args)
+            archive = next(c for c in pack["cases"] if c["id"] == "chamber-archive")
+            self.assertEqual(len(archive["media"]), 4)
+            self.assertTrue(any("h6-copy.jpg" in str(f["value"]) for f in archive["facts"]))
+            count = next(c for c in pack["cases"] if c["id"] == "counts-N1V1C1")
+            names = {Path(m["source_path"]).name for m in count["media"]}
+            self.assertIn("h6.jpg", names)
+            self.assertNotIn("unreadable.jpg", names)
+            self.assertNotIn("ambiguous.jpg", names)
+            self.assertTrue(any("chưa xác nhận đủ bộ" in finding for finding in count["findings"]))
+            h6 = next(m for m in count["media"] if Path(m["source_path"]).name == "h6.jpg")
+            self.assertIn("chưa xác nhận", h6["link_status"])
+            self.assertIn("H6", h6["locule_hint"])
+            self.assertEqual(explicit_ocr_identity("N2 - V17 - C3 - H6"), "N2V17C3")
+            self.assertEqual(explicit_ocr_identity("N1-V4-C1-bonus-H2"), "N1V4C1_BONUS")
+            self.assertIsNone(explicit_ocr_identity("N2-V17-Cz-H6"))
 
 
 if __name__ == "__main__":

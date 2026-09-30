@@ -2,8 +2,8 @@
 """Build a Vietnamese review pack from read-only audits and existing photographs.
 
 No label corrections, decisions, splits or image conversion are performed.
-Source photo links remain provisional. Manifest image hashes are historical;
-cross-identity duplicates and supplemental images are hashed during this run.
+Source photo links remain provisional. Chamber photos, cross-identity duplicates
+and supplemental images are hashed during this run; other hashes are historical.
 """
 
 from __future__ import annotations
@@ -36,6 +36,15 @@ def read_csv(path):
 
 def compact(value):
     return json.dumps(value, ensure_ascii=False, sort_keys=True)
+
+
+def explicit_ocr_identity(text):
+    """Read complete literal codes only; do not repair OCR characters or H numbers."""
+    pattern = (r"(?<![A-Z0-9])N\s*(\d+)[\s_-]*V\s*(\d+)[\s_-]*C\s*(\d+)"
+               r"([\s_-]*BONUS)?(?:[\s_-]*H\s*\d+)?(?![A-Z0-9])")
+    identities = {f"N{n}V{v}C{c}" + ("_BONUS" if bonus else "")
+                  for n, v, c, bonus in re.findall(pattern, text, flags=re.IGNORECASE)}
+    return next(iter(identities)) if len(identities) == 1 else None
 
 
 def new_case(identifier, title, track, priority, sample_ids):
@@ -80,6 +89,10 @@ def build_pack(audit_path, media_path, summary_path, chamber_path=None, preview_
         sources["chamber_manifest"] = {"path": str(Path(chamber_path).resolve()), "sha256": sha256(chamber_path)}
     sources["preview_roots"] = [str(Path(p).resolve()) for p in preview_roots]
     verified_images = {}
+    ocr_by_path = {str(Path(row["file_goc"]).resolve()): row for row in ocr_rows}
+    for path in ocr_by_path:
+        if Path(path).suffix.lower() in RASTER_SUFFIXES and Path(path).is_file():
+            verified_images[path] = sha256(path)
     by_hash = defaultdict(list)
     for photo in photos:
         if photo["sample_id"] and photo["destination_sha256"]:
@@ -185,6 +198,13 @@ def build_pack(audit_path, media_path, summary_path, chamber_path=None, preview_
     scope["questions"] = ["Bốn số đo ngoài quả có thực sự được lấy trước khi bổ không? Có phiếu hoặc quy trình của đợt lấy mẫu để đối chiếu không?",
                           "Nhãn hộc lép thiếu có được đo ở đợt này không? Nếu không có bằng chứng, giữ thiếu và hoãn mục tiêu này."]
     cases.append(scope)
+    if chamber_path:
+        archive = new_case("chamber-archive", "Kho toàn bộ ảnh hộc gốc để tìm ảnh còn thiếu", "shared", 4, [])
+        archive["findings"] = ["Hiển thị mọi ảnh gốc có sẵn trong bảng kê hộc, kể cả ảnh chưa đọc được mã hoặc được ghi không phải ảnh hộc.",
+                               "Đây là kho tìm bằng chứng, không phải danh sách ảnh đã xác nhận thuộc từng quả. Không tự gán ảnh đứng cạnh nhau."]
+        archive["questions"] = ["Ảnh nào thuộc quả/hộc đang duyệt? Ghi tên ảnh và bằng chứng nhận diện; giữ chưa rõ nếu không đọc được mã."]
+        fact(archive, "Số dòng ảnh trong bảng kê", len(ocr_rows), str(chamber_path))
+        cases.append(archive)
 
     def attach(case):
         selected = []
@@ -195,20 +215,27 @@ def build_pack(audit_path, media_path, summary_path, chamber_path=None, preview_
                                  photo.get("manifest_path", str(media_path)) + ":" + photo.get("manifest_row", "")))
         for row_number, row in enumerate(ocr_rows, 2):
             related = []
+            explicit = explicit_ocr_identity(row["ocr_tho"])
             for sample_id in case["sample_ids"]:
                 base = sample_id.split("_BONUS")[0]
                 if row["ma_mau"] == sample_id or re.fullmatch(re.escape(base) + r"H\d+", row["ma_hoc_goi_y"]):
                     if "BONUS" not in sample_id or "BONUS" in row["ocr_tho"].upper():
                         related.append(sample_id)
-            if not related:
+                if explicit == sample_id and sample_id not in related:
+                    related.append(sample_id)
+            if not related and case["id"] != "chamber-archive":
                 continue
             path = row["file_goc"]
             if Path(path).suffix.lower() not in RASTER_SUFFIXES:
                 continue
             digest = next((p["destination_sha256"] for p in photos if p["source_path"] == path), "")
-            selected.append((path, "chamber_photo", digest, "Ứng viên từ OCR cũ, chưa xác nhận mã/hộc", ", ".join(related), f"{chamber_path}:{row_number}"))
+            status = "Theo bảng kê/OCR, chưa xác nhận mã/hộc"
+            if explicit and explicit in related:
+                status = "Có mã đầy đủ trong OCR gốc, vẫn là ứng viên chưa xác nhận"
+            selected.append((path, "chamber_photo", digest, status,
+                             ", ".join(related) or row["ma_mau"] or "Chưa có mã xác nhận", f"{chamber_path}:{row_number}"))
             fact(case, "OCR gốc — " + Path(path).name,
-                 compact({key: row[key] for key in ["ma_mau", "ma_hoc_goi_y", "trang_thai_nhan", "ocr_tho"]}), f"{chamber_path}:{row_number}")
+                 compact({key: row.get(key, "") for key in ["ma_mau", "hoc", "ma_hoc_goi_y", "trang_thai_nhan", "phan_loai", "ocr_tho"]}), f"{chamber_path}:{row_number}")
         if not selected:
             for sample_id in case["sample_ids"]:
                 for root in preview_roots:
@@ -229,6 +256,7 @@ def build_pack(audit_path, media_path, summary_path, chamber_path=None, preview_
             if path in seen_paths:
                 continue
             seen_paths.add(path)
+            digest = verified_images.get(str(path), digest)
             if not digest:
                 digest = sha256(path)
                 verified_images[str(path)] = digest
@@ -236,13 +264,30 @@ def build_pack(audit_path, media_path, summary_path, chamber_path=None, preview_
                 fact(case, "Bản sao cùng hash, chỉ hiển thị một ảnh", str(path), digest)
                 continue
             grouped[digest] = path
-            case["media"].append({"id": "media-" + hashlib.sha256(str(path).encode()).hexdigest(),
+            record = {"id": "media-" + hashlib.sha256(str(path).encode()).hexdigest(),
                                   "label": path.name + " — " + sample_ids, "kind": kind,
-                                  "source_path": str(path), "sha256": digest, "link_status": status})
+                                  "source_path": str(path), "sha256": digest, "link_status": status}
+            if str(path) in ocr_by_path:
+                row = ocr_by_path[str(path)]
+                literal_hocs = sorted(set(re.findall(r"(?<![A-Z])H\s*(\d+)(?![A-Z0-9])", row["ocr_tho"], re.IGNORECASE)))
+                hint = row.get("hoc") or row["ma_hoc_goi_y"] or "Chưa đọc rõ hộc"
+                if explicit_ocr_identity(row["ocr_tho"]) and literal_hocs:
+                    hint = "OCR nguyên văn: " + ", ".join("H" + number for number in literal_hocs)
+                record["locule_hint"] = hint + " — gợi ý chưa duyệt"
+            case["media"].append(record)
         if case["sample_ids"] and not case["media"]:
             case["findings"].append("Chưa có ảnh bằng chứng đọc được cho mã này trong các nguồn đã kiểm tra.")
         if case["media"]:
             case["findings"].append("Ảnh là bằng chứng để người duyệt kiểm tra; quan hệ theo thư mục hoặc gợi ý OCR có thể sai. OCR cũ chỉ xét H1–H5.")
+        if case["sample_ids"]:
+            chamber_count = sum(m["kind"] == "chamber_photo" for m in case["media"])
+            declared = [str(fr["values"]["Số lượng hộc"]) for mapping in audit["crosswalk"]
+                        if mapping["sample_id"] in case["sample_ids"] and mapping["status"] == "matched"
+                        for fr in [fruits[mapping["workbook_rows"][0]]]]
+            case["findings"].append(f"Có {chamber_count} ảnh hộc ứng viên khác nội dung; bảng quả ghi "
+                                    f"{', '.join(declared) if declared else 'chưa nối nhãn'} hộc; chưa xác nhận đủ bộ. "
+                                    "Số ảnh không phải số hộc. Có thể tìm thêm trong kho toàn bộ ảnh hộc.")
+            case["questions"].append("Đã có ảnh của những hộc nào, còn thiếu hộc nào? Có ảnh trùng/chụp lại hoặc sai mã không? Xem kho toàn bộ ảnh hộc nếu bộ ứng viên chưa đủ.")
 
     for case in cases:
         attach(case)
