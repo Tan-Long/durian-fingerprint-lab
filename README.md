@@ -81,3 +81,50 @@ python3 -B -m unittest discover -s scripts -p 'test_*.py'
 test_video/.venv/bin/python -B -m unittest discover -s test_video -p 'test_*.py'
 test_video/.venv/bin/python -B -m unittest prototypes.durian_2d_projection.test_spike_graph
 ```
+
+## Duyệt Nhãn Trên Máy
+
+Gắn ổ `SoilTECH`, chạy chỉ mục và đối soát ở trên trước. Tạo bộ duyệt riêng
+(chỉ đọc dữ liệu nguồn; không sửa Excel):
+
+```sh
+python3 -B scripts/build_label_review.py \
+  --audit output/morphology/audit.json \
+  --media-index output/data-index/media.csv \
+  --index-summary output/data-index/summary.json \
+  --chamber-manifest '/Volumes/SoilTECH/Ảnh chụp sầu riêng/Chụp Hộc/BANG_KE_HOC.csv' \
+  --preview-root /Volumes/SoilTECH/DurianScan/27082026/processed_multiview_v1 \
+  --preview-root /Volumes/SoilTECH/DurianScan/28082026/processed_multiview_v1 \
+  --observations docs/plans/evidence/durian-two-track-pilot/label-review-observations.json \
+  --output output/label-review/pack-all-chambers.json
+python3 -B scripts/serve_label_review.py \
+  --pack output/label-review/pack-all-chambers.json \
+  --state-dir output/label-review/state \
+  --media-root /Volumes/SoilTECH --port 8765
+```
+
+Cần Python chuẩn và ImageMagick (`magick`, hỗ trợ HEIC). Mở
+<http://127.0.0.1:8765/> trên máy này. Chọn mã trái, xem toàn bộ ảnh hộc ứng viên,
+ảnh đối chiếu mã và dữ liệu ô Excel. Kho ảnh hộc giữ cả ảnh chưa đọc được mã;
+không tự gán ảnh bên cạnh hoặc coi số ảnh là số hộc. Có nút ảnh trước/sau,
+phóng to, vừa khung; ảnh phóng lớn cuộn/kéo được.
+
+Chọn trạng thái, ghi kết luận/căn cứ rồi bấm **Lưu phản hồi**. Bản nháp chưa
+lưu chỉ nằm trong tab. Phản hồi lưu nối tiếp tại
+`output/label-review/state/decisions.sqlite3`, không thay đổi nhãn nguồn hoặc
+cấp PASS cho mô hình. Điều phối viên đọc lại bằng nút **Xuất phản hồi** hoặc:
+
+```sh
+curl -fsS http://127.0.0.1:8765/api/export
+```
+
+Giữ lại file pack cũ và thư mục state khi đổi bộ bằng chứng. Máy chủ đọc pack
+khi khởi động; dùng tên file mới rồi khởi động lại để chuyển bộ. Phản hồi gắn
+với hash của pack, không tự chuyển duyệt sang bộ mới. SQLite vẫn giữ lịch sử
+các bộ cũ; API chỉ xuất bộ đang chạy. Sao lưu DB khi máy chủ đã dừng.
+
+Kiểm tra giao diện đọc-only: chạy `scripts/check_label_review_browser.js` bằng
+công cụ Playwright `browser_run_code_unsafe` với `filename` là đường dẫn tuyệt
+đối. Check dùng context riêng, không gửi phản hồi; bộ mẫu hiện tại cần kho
+427 ảnh. Kiểm thử ghi phản hồi phải dùng state/port riêng, không dùng state
+duyệt thật. Dừng máy chủ bằng Ctrl-C; ảnh nguồn không bị thay đổi.

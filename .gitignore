@@ -16,6 +16,7 @@ scripts/bin/harness.exe
 /01_videos/
 /output/
 /tmp/
+/.playwright-mcp/
 /test_video/processed/
 *.HEIC
 *.MOV

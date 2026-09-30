@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <link rel="icon" href="data:,">
+  <title>SoilTECH · Duyệt nhãn sầu riêng</title>
+  <style>
+    :root{--canvas:#f3f4ef;--surface:#fff;--inset:#eef0e8;--ink:#20231d;--secondary:#555b4e;--tertiary:#68705e;--muted:#818877;--line:#d9ddd2;--strong:#a6b29c;--green:#35623d;--green-soft:#e4eee2;--amber:#885011;--amber-soft:#fff0d9;--red:#9b3b32;--radius:8px;--focus:#287044}
+    *{box-sizing:border-box}body{margin:0;background:var(--canvas);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,select,textarea{font:inherit;color:inherit}button,a,input,select,textarea{touch-action:manipulation}button,.button{min-height:44px;padding:8px 16px;border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px}button:hover,.button:hover{border-color:var(--strong);background:var(--inset)}button:active{transform:translateY(1px)}button:disabled{cursor:wait;opacity:.55}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid var(--focus);outline-offset:3px}a{color:var(--green)}h1,h2,h3,p{margin:0}h1{font-size:21px;letter-spacing:-.02em}h2{font-size:24px;line-height:1.3;letter-spacing:-.025em}h3{font-size:15px}.mono,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}.muted{color:var(--secondary)}.small{font-size:12px}.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--tertiary);font-weight:700}.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.between{justify-content:space-between}.pill{display:inline-flex;align-items:center;border-radius:4px;padding:4px 8px;font-size:12px;font-weight:600;background:var(--inset);color:var(--secondary)}.pill.approved{background:var(--green-soft);color:var(--green)}.pill.needs_changes,.pill.uncertain{background:var(--amber-soft);color:var(--amber)}.primary{background:var(--green);border-color:var(--green);color:white}.primary:hover{background:#294f31;color:white}.notice{padding:12px 16px;background:var(--amber-soft);color:var(--amber);border-radius:var(--radius);font-size:13px}.error{color:var(--red)}[hidden]{display:none!important}
+    header{padding:16px 24px;border-bottom:1px solid var(--line);background:var(--surface);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.brand{display:flex;gap:12px;align-items:center}.mark{width:44px;height:44px;background:var(--green);color:white;border-radius:8px;display:grid;place-items:center;font-weight:700;font-size:13px}.layout{max-width:1760px;margin:auto;display:grid;grid-template-columns:280px minmax(0,1fr)}aside.queue{padding:24px 16px;border-right:1px solid var(--line);min-width:0}.queue-head{padding:0 8px 16px}.filters{display:grid;gap:12px;margin:16px 0}.filters label{font-size:12px;font-weight:600;display:grid;gap:4px}input,select,textarea{width:100%;border:1px solid var(--line);border-radius:6px;padding:10px 12px;background:var(--surface)}.queue-list{display:grid;gap:8px}.case-button{display:block;text-align:left;width:100%;padding:12px;border-color:transparent;background:transparent}.case-button[aria-current="true"]{background:var(--surface);border-color:var(--green);box-shadow:inset 3px 0 var(--green)}.case-button .case-name{display:block;font-weight:650;overflow-wrap:anywhere;margin:6px 0}.case-button .small{display:block;color:var(--secondary)}main{padding:24px;min-width:0}.case-head{margin-bottom:20px}.case-head h2{margin:12px 0 8px}.workspace{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}.evidence{display:grid;gap:16px;min-width:0}.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}.panel-head{padding:16px 20px;border-bottom:1px solid var(--line)}.panel-body{padding:16px 20px}.panel-body>p+p{margin-top:12px}ul,ol{padding-left:20px;margin:8px 0 0}li+li{margin-top:8px}.findings{font-size:14px}.questions{margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}.facts-wrap{overflow:auto;max-height:400px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;vertical-align:top;padding:12px 16px;border-bottom:1px solid var(--line);overflow-wrap:anywhere}th{font-size:11px;text-transform:uppercase;color:var(--tertiary);background:var(--inset);position:sticky;top:0}td:first-child{min-width:120px;font-weight:600}td:last-child{font-family:ui-monospace,monospace;font-size:11px;color:var(--secondary)}.gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:16px}.photo{margin:0;min-width:0;border:1px solid var(--line);border-radius:6px;overflow:hidden}.photo button{display:block;width:100%;padding:0;border:0;border-radius:0;background:var(--inset)}.photo img{display:block;width:100%;height:240px;object-fit:contain}.photo figcaption{padding:12px;font-size:12px;overflow-wrap:anywhere}.photo .source{display:block;margin:4px 0;color:var(--secondary)}.image-error{display:block;padding:16px;color:var(--red);font-size:13px}.gallery-footer{padding:0 16px 16px}.review{position:sticky;top:20px;display:grid;gap:16px}.review form{display:grid;gap:16px}.review label{display:grid;gap:6px;font-size:13px;font-weight:600}.review textarea{min-height:144px;resize:vertical;font-weight:400}.review .help{font-size:12px;color:var(--secondary);font-weight:400}.review-buttons{display:grid;gap:8px}.review-status{font-size:13px;min-height:20px}.history{max-height:340px;overflow:auto}.event{padding:12px 0;border-bottom:1px solid var(--line)}.event:first-child{padding-top:0}.event:last-child{border-bottom:0}.event p{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:8px;font-size:13px}.event time{font-size:11px;color:var(--tertiary)}.empty{padding:32px 20px;color:var(--secondary);text-align:center}.footnote{padding:16px 0;font-size:12px;color:var(--tertiary);overflow-wrap:anywhere}progress{accent-color:var(--green);width:100%;height:6px;display:block;margin:12px 0}.nav-actions{margin-top:16px}.nav-actions button{flex:1}.draft-mark{color:var(--amber);font-size:11px}details summary{cursor:pointer;font-weight:600}details pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:11px}
+    dialog{position:fixed;inset:12px;margin:auto;width:calc(100% - 24px);height:calc(100% - 24px);max-width:1200px;max-height:900px;padding:0;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);overflow:hidden}dialog[open]{display:flex;flex-direction:column}dialog::backdrop{background:rgba(20,27,17,.7)}.dialog-head{padding:8px 12px;border-bottom:1px solid var(--line);flex-shrink:0}.dialog-head h3{overflow-wrap:anywhere;flex:1;min-width:0;font-size:13px}.photo-controls{padding:8px 12px;border-bottom:1px solid var(--line);flex-shrink:0;gap:8px}.photo-viewport{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;background:var(--inset);touch-action:pan-x pan-y pinch-zoom;cursor:grab}.photo-viewport.dragging{cursor:grabbing}.photo-viewport img{display:block;max-width:none;max-height:none;margin:0 auto;user-select:none;-webkit-user-drag:none}.dialog-caption{padding:8px 12px;overflow-wrap:anywhere;font-size:12px;max-height:72px;overflow:auto;flex-shrink:0}
+    @media(min-width:1200px){.queue{height:calc(100vh - 90px);overflow:auto;position:sticky;top:0}}@media(max-width:1150px){.workspace{grid-template-columns:minmax(0,1fr)}.review{position:static}.layout{grid-template-columns:240px minmax(0,1fr)}}@media(max-width:720px){header{padding:16px}header .actions{width:100%}h1{font-size:18px}h2{font-size:21px}.layout{display:block}.queue{border-right:0;border-bottom:1px solid var(--line);padding:16px!important}.queue-head{padding:0}.filters{grid-template-columns:1fr 1fr}.queue-list{max-height:220px;overflow:auto}.case-button{padding:8px 12px}.case-button .case-name{margin:2px 0}main{padding:16px}.workspace{gap:16px}.panel-head,.panel-body{padding:16px}.gallery{gap:8px;padding:12px}.photo img{height:180px}.photo figcaption{padding:8px}.small{font-size:12px}th,td{padding:8px}.facts-wrap{max-height:320px}}
+    /* Main-page wheel gestures have one vertical scroll owner. */
+    html{overflow-y:scroll}aside.queue{height:auto;overflow:visible;position:static;align-self:start}.queue-list,.facts-wrap,.history{max-height:none;overflow:visible}.review{position:static}.facts-wrap{overflow-wrap:anywhere}table{table-layout:fixed}td:first-child{min-width:0}
+    @media(max-width:720px){.queue-list{grid-template-columns:repeat(2,minmax(0,1fr))}.case-button .small{overflow-wrap:anywhere}.dialog-head{gap:8px}.dialog-caption{max-height:48px}.photo-controls .small{display:none}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><div class="mark" aria-hidden="true">ST</div><div><p class="eyebrow">SoilTECH / Sầu riêng</p><h1>Bàn duyệt nhãn</h1></div></div>
+    <div class="row actions"><span class="pill">Chỉ trên máy này</span><button id="refresh" type="button">Đọc lại phản hồi</button><a class="button" href="/api/export" download="phan-hoi-nhan.json">Xuất phản hồi</a></div>
+  </header>
+  <div class="layout">
+    <aside class="queue" aria-label="Danh sách ca cần duyệt">
+      <div class="queue-head"><p class="eyebrow">Hàng đợi đối chiếu</p><h3 id="progressText">Đang đọc dữ liệu…</h3><progress id="progress" value="0" max="1" aria-label="Tiến độ duyệt"></progress><p class="small muted">Xem bằng chứng → ghi kết luận → lưu.</p></div>
+      <div class="filters"><label>Tìm mã trái<input id="search" type="search" placeholder="Ví dụ N2V17C3" autocomplete="off"></label><label>Trạng thái<select id="filter"><option value="all">Tất cả</option><option value="pending">Chưa phản hồi</option><option value="approved">Đã duyệt</option><option value="needs_changes">Cần sửa</option><option value="uncertain">Chưa đủ bằng chứng</option><option value="comment">Có comment</option></select></label></div>
+      <nav id="queueList" class="queue-list" aria-label="Chọn ca đối chiếu"></nav>
+    </aside>
+    <main id="main"><div id="loadState" class="panel empty" role="status">Đang kết nối dữ liệu trên máy…</div><div id="caseView" hidden>
+      <div class="case-head"><div class="row between"><p id="caseTrack" class="eyebrow"></p><span id="caseStatus" class="pill"></span></div><h2 id="caseTitle"></h2><div class="row between"><p id="caseIds" class="mono muted"></p><button id="jumpPhotos" type="button">Xem ảnh đối chiếu ↓</button></div></div>
+      <div class="workspace"><div class="evidence">
+        <section class="panel" aria-labelledby="findingsTitle"><div class="panel-head"><h3 id="findingsTitle">Đối chiếu trước khi duyệt</h3></div><div class="panel-body findings"><ul id="findings"></ul><div class="questions"><h3>Bạn cần xác nhận</h3><ol id="questions"></ol></div></div></section>
+        <details class="panel"><summary class="panel-head" id="factsTitle">Mở dữ liệu gốc & vị trí cần kiểm tra</summary><p class="panel-body small muted">Ô trống không phải số 0. Chưa có giá trị nào được tự sửa.</p><div class="facts-wrap"><table><thead><tr><th scope="col">Trường</th><th scope="col">Giá trị ghi nhận</th><th scope="col">Nguồn / ô</th></tr></thead><tbody id="facts"></tbody></table></div></details>
+        <section class="panel" aria-labelledby="photosTitle"><div class="panel-head"><div class="row between"><h3 id="photosTitle">Bộ ảnh hộc / múi sau bổ</h3><span id="photoCount" class="mono small"></span></div><p class="small muted">Hiện toàn bộ ảnh ứng viên đã tìm được. Số ảnh không phải số hộc; chưa xác nhận đủ bộ hoặc đúng mã.</p><button id="openArchive" type="button">Tìm ảnh còn thiếu trong kho ảnh hộc</button></div><div id="gallery" class="gallery"></div><details id="otherPhotoSection" class="panel-body"><summary id="otherPhotoTitle">Ảnh ngoài vỏ / đối chiếu mã</summary><div id="otherGallery" class="gallery"></div></details></section>
+        <details class="panel panel-body"><summary>Nguồn dữ liệu & giới hạn</summary><p class="small muted">Bản duyệt gắn với một ảnh chụp dữ liệu cố định. Duyệt ở đây không tự sửa Excel và không chứng nhận độ chính xác mô hình.</p><pre id="sources"></pre></details>
+      </div><div class="review">
+        <section class="panel" aria-labelledby="reviewTitle"><div class="panel-head"><h3 id="reviewTitle">Kết luận của bạn</h3></div><div class="panel-body"><form id="reviewForm">
+          <label for="decision">Trạng thái muốn ghi nhận<select id="decision"><option value="comment">Chỉ gửi comment</option><option value="approved">Duyệt — ghi rõ kết luận bên dưới</option><option value="needs_changes">Cần sửa nhãn / liên kết</option><option value="uncertain">Chưa đủ bằng chứng</option></select></label>
+          <label for="comment">Kết luận / comment<textarea id="comment" required maxlength="4000" placeholder="Ví dụ: Ảnh thuộc mã …; số hộc đúng là …; đối chiếu theo ảnh …"></textarea><span class="help">Ghi rõ trường, giá trị đúng và căn cứ nếu có. Duyệt ca có mâu thuẫn cần nêu bạn chọn kết luận nào. Tối đa 4.000 ký tự.</span></label>
+          <p class="notice">Lưu phản hồi riêng để điều phối viên đọc lại. Không thay đổi nhãn gốc hoặc tự duyệt cả dự án.</p>
+          <div class="review-buttons"><button class="primary" id="save" type="submit">Lưu phản hồi</button><span id="draftState" class="small muted">Chưa có thay đổi.</span></div><p id="saveState" class="review-status" role="status" aria-live="polite"></p>
+        </form><div class="row nav-actions"><button id="previousCase" type="button">← Ca trước</button><button id="nextCase" type="button">Ca tiếp →</button></div></div></section>
+        <section class="panel" aria-labelledby="historyTitle"><div class="panel-head"><h3 id="historyTitle">Lịch sử phản hồi</h3><p class="small muted">Giữ cả các lần cập nhật trước.</p></div><div id="history" class="panel-body history"></div></section>
+        <p id="snapshot" class="footnote mono"></p>
+      </div></div>
+    </div></main>
+  </div>
+  <dialog id="photoDialog" aria-labelledby="photoTitle"><div class="row dialog-head"><h3 id="photoTitle"></h3><a id="fullPhoto" class="button" target="_blank" rel="noopener">Mở ảnh riêng</a><button id="closePhoto" type="button" aria-label="Đóng ảnh">Đóng</button></div><div class="row photo-controls"><button id="previousPhoto" type="button" aria-label="Ảnh trước">←</button><output id="photoPosition"></output><button id="nextPhoto" type="button" aria-label="Ảnh tiếp">→</button><button id="zoomOut" type="button" aria-label="Thu nhỏ ảnh">−</button><output id="zoomLevel" aria-live="polite">Vừa khung</output><button id="zoomIn" type="button" aria-label="Phóng to ảnh">+</button><button id="fitPhoto" type="button">Vừa khung</button><span class="small muted">Cuộn hoặc giữ chuột kéo để xem các mép ảnh.</span></div><p id="largeError" class="notice" role="status" hidden>Ảnh lớn chưa tải được. Đóng rồi mở lại để thử lại; nếu vẫn lỗi, báo điều phối viên kiểm tra xử lý ảnh.</p><div id="photoViewport" class="photo-viewport" tabindex="0" aria-label="Vùng ảnh phóng to, cuộn để xem các mép"><img id="largePhoto" alt="" draggable="false"></div><p id="photoCaption" class="dialog-caption"></p></dialog>
+  <script>
+    'use strict';
+    const $=id=>document.getElementById(id);
+    const names={approved:'Đã duyệt',needs_changes:'Cần sửa',uncertain:'Chưa đủ bằng chứng',comment:'Có comment',pending:'Chưa phản hồi'};
+    let data=null,selected=null,saving=false,loading=false,photoSequence=[],photoIndex=0;
+    const drafts=new Map();
+    function el(tag,text,className){const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(className)node.className=className;return node;}
+    function valueText(value){return value===null||value===undefined?'Chưa ghi nhận':typeof value==='object'?JSON.stringify(value):String(value);}
+    function state(id){const current=data.current[id];return current?.decision||((current||data.history.some(event=>event.case_id===id))?'comment':'pending');}
+    function active(){return data.cases.find(item=>item.id===selected);}
+    function visibleCases(){const search=$('search').value.trim().toLocaleLowerCase('vi');return data.cases.filter(item=>(!search||[item.title,...item.sample_ids].join(' ').toLocaleLowerCase('vi').includes(search))&&($('filter').value==='all'||state(item.id)===$('filter').value));}
+    function renderQueue(){
+      const approved=data.cases.filter(item=>state(item.id)==='approved').length;
+      $('progressText').textContent=`${approved} / ${data.cases.length} ca đã duyệt`;
+      $('progress').max=Math.max(1,data.cases.length);$('progress').value=approved;
+      $('queueList').replaceChildren();
+      const cases=visibleCases();
+      if(!cases.length)$('queueList').append(el('p','Không có ca phù hợp bộ lọc.','empty small'));
+      for(const item of cases){const button=el('button');button.type='button';button.className='case-button';button.setAttribute('aria-current',String(selected===item.id));button.append(el('span',names[state(item.id)],`pill ${state(item.id)}`),el('span',item.title,'case-name'),el('span',item.sample_ids.join(' · ')||'Toàn bộ dữ liệu','small mono'));if(drafts.has(item.id))button.append(el('span','Bản nháp chưa lưu','draft-mark'));button.addEventListener('click',()=>selectCase(item.id));$('queueList').append(button);}
+    }
+    function renderHistory(){
+      const events=data.history.filter(event=>event.case_id===selected).sort((a,b)=>b.revision-a.revision);
+      $('history').replaceChildren();
+      if(!events.length){$('history').append(el('p','Chưa có phản hồi được lưu.','small muted'));return;}
+      for(const event of events){const node=el('article',undefined,'event');node.append(el('span',names[event.decision]||event.decision,`pill ${event.decision}`));const time=el('time',` · Lần ${event.revision} · ${new Date(event.created_at).toLocaleString('vi-VN')}`);time.dateTime=event.created_at;node.append(time,el('p',event.comment));$('history').append(node);}
+    }
+    function renderStatus(){const currentState=state(selected);$('caseStatus').textContent=names[currentState];$('caseStatus').className=`pill ${currentState}`;renderHistory();renderQueue();}
+    function imageURL(media,full=false){return `/media/${encodeURIComponent(media.id)}${full?'?full=1':''}`;}
+    let photoScale=1,drag=null;
+    function resizePhoto(){const view=$('photoViewport'),img=$('largePhoto');if(!$('photoDialog').open||!img.naturalWidth)return;const fit=Math.min(view.clientWidth/img.naturalWidth,view.clientHeight/img.naturalHeight,1);img.style.width=Math.max(1,Math.floor(img.naturalWidth*fit*photoScale))+'px';img.style.height=Math.max(1,Math.floor(img.naturalHeight*fit*photoScale))+'px';$('zoomLevel').textContent=photoScale===1?'Vừa khung':`${Math.round(photoScale*100)}% khung`;$('zoomOut').disabled=photoScale<=1;$('zoomIn').disabled=photoScale>=8;}
+    function fitPhoto(){photoScale=1;resizePhoto();$('photoViewport').scrollTo(0,0);}
+    function showPhoto(media){photoSequence=active().media.filter(item=>(item.kind==='chamber_photo')===(media.kind==='chamber_photo'));photoIndex=photoSequence.findIndex(item=>item.id===media.id);$('photoPosition').textContent=`${photoIndex+1} / ${photoSequence.length}`;$('previousPhoto').disabled=photoIndex===0;$('nextPhoto').disabled=photoIndex===photoSequence.length-1;$('largeError').hidden=true;$('photoTitle').textContent=media.label;$('largePhoto').src=imageURL(media,true);$('largePhoto').alt=media.label;$('fullPhoto').href=imageURL(media,true);$('photoCaption').textContent=`${media.link_status||'Chưa xác nhận liên kết'} · ${media.source_path}`;if(!$('photoDialog').open)$('photoDialog').showModal();fitPhoto();}
+    function appendPhotos(){
+      const media=active().media||[],chamber=media.filter(photo=>photo.kind==='chamber_photo');
+      $('photoCount').textContent=`${chamber.length} ảnh sau bổ`;$('otherPhotoTitle').textContent=`Ảnh ngoài vỏ / đối chiếu mã (${media.length-chamber.length} ảnh)`;$('otherPhotoSection').hidden=media.length===chamber.length;$('otherPhotoSection').open=chamber.length===0;
+      $('openArchive').hidden=selected==='chamber-archive'||!data.cases.some(item=>item.id==='chamber-archive');
+      if(!chamber.length)$('gallery').append(el('p','Chưa tìm được ảnh hộc sau bổ cho ca này. Không đủ bằng chứng ảnh để chốt tổng hộc/múi; hãy mở kho ảnh hộc hoặc giữ trạng thái chưa rõ.','notice'));
+      for(const photo of media){
+        const figure=el('figure',undefined,'photo'),button=el('button'),img=el('img');let failed=false;
+        button.type='button';button.setAttribute('aria-label',`Phóng lớn ${photo.label}`);
+        img.src=imageURL(photo);img.alt=photo.label;img.loading='lazy';img.width=400;img.height=300;
+        img.addEventListener('error',()=>{failed=true;button.replaceChildren(el('span','Ảnh xem trước chưa tải được. Bấm để thử lại; nếu vẫn lỗi, báo điều phối viên.','image-error'));});
+        button.append(img);button.addEventListener('click',()=>{if(failed){failed=false;button.replaceChildren(img);img.src=imageURL(photo);}else showPhoto(photo);});
+        const caption=el('figcaption');caption.append(el('strong',photo.label),el('span',({random_photo:'Ảnh chụp tự do',chamber_photo:'Ảnh hộc sau bổ',rig_preview:'Ảnh ghép từ video'}[photo.kind]||photo.kind),'source'),el('span',photo.link_status||'Chưa xác nhận liên kết','source'));
+        if(photo.locule_hint)caption.append(el('span',`Gợi ý chưa duyệt: ${photo.locule_hint}`,'source'));
+        const details=el('details');details.append(el('summary','Đường dẫn nguồn'),el('span',photo.source_path,'mono small'));caption.append(details);figure.append(button,caption);$(photo.kind==='chamber_photo'?'gallery':'otherGallery').append(figure);
+      }
+    }
+    function selectCase(id){
+      if(saving)return;
+      const item=data.cases.find(entry=>entry.id===id);if(!item)return;
+      selected=id;location.hash=encodeURIComponent(id);$('loadState').hidden=true;$('caseView').hidden=false;
+      $('caseTrack').textContent=({fingerprint:'Nhận diện / Liên kết ảnh',morphology:'Hộc · Múi · Vỏ',shared:'Dữ liệu dùng chung'}[item.track]||item.track)+` · Ưu tiên ${item.priority||'kiểm tra'}`;
+      $('caseTitle').textContent=item.title;$('caseIds').textContent=item.sample_ids.join(' · ');
+      $('findings').replaceChildren(...item.findings.map(text=>el('li',text)));
+      $('questions').replaceChildren(...item.questions.map(text=>el('li',text)));
+      $('facts').replaceChildren();for(const fact of item.facts){const row=el('tr'),source=String(fact.source||'');const cell=el('td',source.includes('#')?source.split('/').pop():source.split('/').slice(-2).join('/'));cell.title=source;row.append(el('td',fact.label),el('td',valueText(fact.value)),cell);$('facts').append(row);}
+      const draft=drafts.get(id);$('decision').value=draft?.decision||'comment';$('comment').value=draft?.comment||'';
+      $('saveState').textContent='';$('saveState').className='review-status';$('draftState').textContent=draft?'Bản nháp chưa lưu — chỉ lưu khi bấm nút.':'Chưa có thay đổi.';
+      $('gallery').replaceChildren();$('otherGallery').replaceChildren();appendPhotos();
+      $('snapshot').textContent=`Bản dữ liệu: ${data.pack_id.slice(0,12)} · Phản hồi lưu trên máy`;
+      $('sources').textContent=JSON.stringify(data.sources,null,2);
+      const index=data.cases.findIndex(entry=>entry.id===selected);$('previousCase').disabled=index===0;$('nextCase').disabled=index===data.cases.length-1;
+      renderStatus();
+    }
+    function rememberDraft(){if(!selected||saving)return;const existing=drafts.get(selected);drafts.set(selected,{decision:$('decision').value,comment:$('comment').value,expected_revision:existing?.expected_revision??data.current[selected]?.revision??0});$('draftState').textContent='Bản nháp chưa lưu — chỉ lưu khi bấm nút.';renderQueue();}
+    async function load(refresh=false){
+      if(saving||loading)return;
+      if(refresh&&drafts.size&&!confirm('Đọc phản hồi mới và giữ các bản nháp? Khi lưu tiếp, phản hồi của bạn sẽ là một bản cập nhật mới sau các phản hồi đang có.'))return;
+      loading=true;$('refresh').disabled=true;$('save').disabled=true;$('comment').disabled=true;$('decision').disabled=true;
+      try{const response=await fetch('/api/review',{cache:'no-store'});if(!response.ok)throw new Error(`Không đọc được dữ liệu (${response.status}).`);const next=await response.json();
+        if(data&&next.pack_id!==data.pack_id&&drafts.size)throw new Error('Bản dữ liệu đã đổi. Hãy sao chép bản nháp trước khi tải lại trang; chưa ghi đè phản hồi.');
+        data=next;data.current=data.current||{};data.history=data.history||[];
+        if(refresh)for(const [id,draft] of drafts)draft.expected_revision=data.current[id]?.revision??0;
+        renderQueue();let hash;try{hash=decodeURIComponent(location.hash.slice(1));}catch{hash='';}
+        const chosen=data.cases.find(item=>item.id===(selected||hash))||data.cases[0];
+        if(chosen)selectCase(chosen.id);else{$('caseView').hidden=true;$('loadState').hidden=false;$('loadState').textContent='Không có ca cần duyệt trong bản dữ liệu này.';}
+      }catch(error){if(data){$('saveState').textContent=error.message;$('saveState').className='review-status error';}else{$('loadState').textContent=error.message+' Kiểm tra máy chủ và bấm “Đọc lại phản hồi”.';$('loadState').classList.add('error');}}
+      finally{loading=false;$('refresh').disabled=false;$('save').disabled=false;$('comment').disabled=false;$('decision').disabled=false;}
+    }
+    $('reviewForm').addEventListener('submit',async event=>{
+      event.preventDefault();if(saving||loading)return;const comment=$('comment').value.trim();if(!comment){$('saveState').textContent='Vui lòng ghi kết luận hoặc comment trước khi lưu.';$('comment').focus();return;}
+      rememberDraft();const caseId=selected,draft=drafts.get(caseId);saving=true;$('save').disabled=true;$('refresh').disabled=true;$('comment').disabled=true;$('decision').disabled=true;$('saveState').className='review-status';$('saveState').textContent='Đang lưu phản hồi…';
+      try{const response=await fetch('/api/review',{method:'POST',headers:{'Content-Type':'application/json','X-Review-Token':data.csrf_token},body:JSON.stringify({pack_id:data.pack_id,case_id:caseId,...draft,comment})});const result=await response.json();if(!response.ok){if(response.status===409)throw new Error('Có phản hồi mới hoặc bản dữ liệu đã đổi. Bản nháp vẫn được giữ. Bấm “Đọc lại phản hồi”, đối chiếu lịch sử rồi lưu lại.');throw new Error(result.error||`Lưu thất bại (${response.status}).`);}
+        data.current[caseId]=result.current;data.history.push(result.event);drafts.delete(caseId);$('comment').value='';$('decision').value='comment';$('draftState').textContent='Không có bản nháp.';$('saveState').textContent='Đã lưu trên máy. Điều phối viên có thể đọc lại phản hồi này.';renderStatus();
+      }catch(error){$('saveState').textContent=error.message;$('saveState').className='review-status error';}
+      finally{saving=false;$('save').disabled=false;$('refresh').disabled=false;$('comment').disabled=false;$('decision').disabled=false;}
+    });
+    $('comment').addEventListener('input',rememberDraft);$('decision').addEventListener('change',rememberDraft);
+    $('search').addEventListener('input',()=>data&&renderQueue());$('filter').addEventListener('change',()=>data&&renderQueue());$('refresh').addEventListener('click',()=>load(true));$('openArchive').addEventListener('click',()=>{selectCase('chamber-archive');$('photosTitle').scrollIntoView({block:'start'});});
+    $('previousCase').addEventListener('click',()=>{const index=data.cases.findIndex(item=>item.id===selected);if(index>0)selectCase(data.cases[index-1].id);});
+    $('nextCase').addEventListener('click',()=>{const index=data.cases.findIndex(item=>item.id===selected);if(index<data.cases.length-1)selectCase(data.cases[index+1].id);});
+    $('closePhoto').addEventListener('click',()=>$('photoDialog').close());
+    $('previousPhoto').addEventListener('click',()=>{if(photoIndex>0)showPhoto(photoSequence[photoIndex-1]);});
+    $('nextPhoto').addEventListener('click',()=>{if(photoIndex<photoSequence.length-1)showPhoto(photoSequence[photoIndex+1]);});
+    $('largePhoto').addEventListener('load',resizePhoto);
+    $('zoomIn').addEventListener('click',()=>{photoScale=Math.min(8,photoScale*1.5);resizePhoto();});
+    $('zoomOut').addEventListener('click',()=>{photoScale=Math.max(1,photoScale/1.5);resizePhoto();});
+    $('fitPhoto').addEventListener('click',fitPhoto);
+    new ResizeObserver(resizePhoto).observe($('photoViewport'));
+    $('photoViewport').addEventListener('pointerdown',event=>{if(event.pointerType!=='mouse'||event.button!==0)return;const view=$('photoViewport');drag={x:event.clientX,y:event.clientY,left:view.scrollLeft,top:view.scrollTop};view.setPointerCapture(event.pointerId);view.classList.add('dragging');event.preventDefault();});
+    $('photoViewport').addEventListener('pointermove',event=>{if(!drag)return;const view=$('photoViewport');view.scrollLeft=drag.left+drag.x-event.clientX;view.scrollTop=drag.top+drag.y-event.clientY;});
+    for(const type of ['pointerup','pointercancel','lostpointercapture'])$('photoViewport').addEventListener(type,()=>{drag=null;$('photoViewport').classList.remove('dragging');});
+    $('largePhoto').addEventListener('error',()=>{$('largeError').hidden=false;});
+    $('jumpPhotos').addEventListener('click',()=>$('photosTitle').scrollIntoView({block:'start'}));
+    window.addEventListener('beforeunload',event=>{if(drafts.size||saving){event.preventDefault();event.returnValue='';}});
+    load();
+  </script>
+</body>
+</html>

@@ -71,7 +71,8 @@ accuracy claim.
 6. Compare morphology baselines, then image features; measure fingerprint
    retrieval, false acceptance, abstention, and latency. Select thresholds on
    development data only. Product acceptance thresholds remain undecided.
-7. Extend the existing viewer after useful evaluation evidence exists.
+7. Provide a label-review viewer before evaluation (user-requested on
+   2026-09-30), then extend model-evidence viewing after benchmarks exist.
 
 ## Coordination And Acceptance
 
@@ -117,6 +118,36 @@ task database or orchestration lifecycle.
   groups. Approval of the audit does not approve or repair its input labels.
 - Agent-to-agent coordination and reports use English; user-facing reports
   and approval requests use Vietnamese, as requested by the user.
+
+### Increment 2: Local Label Review
+
+Authority: the user requested self-checking disputed labels, an HTML host with
+photos and data, and persistent approvals/comments the coordinator can read.
+They explicitly selected "Duyệt trên máy này trước" (local-machine review).
+
+- Coordinator: Vietnamese UI, visual self-check, integration, browser proof,
+  runtime instructions and Git publication.
+- Fingerprint agent: loopback-only HTTP server, allowlisted media delivery and
+  append-only SQLite review events with snapshot IDs and stale-write protection.
+  Worktree branch: `agent/label-review-server`, based on accepted `fe720a8`.
+- Morphology agent: reproducible review pack from existing audit/index with
+  exact cell references, provisional photo relations and explicit open questions.
+  Worktree branch: `agent/label-review-data`, based on accepted `fe720a8`.
+- Reuse the existing viewer's dependency-free HTML approach and visual palette;
+  no new frontend framework or external host. Photos stay on SoilTECH.
+- Reviews are application data, not a Harness task database. Store them under
+  ignored `output/label-review/`; never overwrite them when rebuilding a pack.
+  Bind each decision to the exact pack snapshot and retain earlier events.
+- An approval/comment records the user's conclusion only; it does not rewrite
+  Excel, silently resolve identity conflicts, freeze a split, or grant model PASS.
+- Validate source boundaries, save/reload/restart, stale writes, image delivery,
+  empty/error states and the browser workflow using isolated test review state.
+- User feedback expanded the scope to all chamber/aril evidence, not a single
+  example. Include every chamber-manifest photo in a searchable-case archive,
+  preserve provisional associations, and flag incomplete per-fruit sets. No
+  adjacency-based identity inference or automatic approval is authorized.
+- Status: implemented locally; integrated verification and user acceptance of
+  increment 2 pending. Full project PASS remains user-owned.
 
 ## Risks And Recovery
 
