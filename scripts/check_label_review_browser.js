@@ -50,6 +50,7 @@ async (page) => {
     await probe.locator('#openArchive').click();
     const archiveCount = pack.cases.find(item => item.id === 'chamber-archive').media.length;
     check(await probe.locator('#gallery .photo').count() === archiveCount && archiveCount === 427, 'All 427 original chamber images must be available, including unassigned ones');
+    check((await probe.locator('#photosTitle').textContent()).includes('bảng kê hộc'), 'Archive must not claim every image depicts an opened locule');
     await probe.locator('.case-button').filter({hasText:sample.title}).click();
     await probe.setViewportSize({ width: Math.round(390/browserScale), height: Math.round(640/browserScale) });
     await probe.reload();

@@ -82,7 +82,8 @@
     function showPhoto(media){photoSequence=active().media.filter(item=>(item.kind==='chamber_photo')===(media.kind==='chamber_photo'));photoIndex=photoSequence.findIndex(item=>item.id===media.id);$('photoPosition').textContent=`${photoIndex+1} / ${photoSequence.length}`;$('previousPhoto').disabled=photoIndex===0;$('nextPhoto').disabled=photoIndex===photoSequence.length-1;$('largeError').hidden=true;$('photoTitle').textContent=media.label;$('largePhoto').src=imageURL(media,true);$('largePhoto').alt=media.label;$('fullPhoto').href=imageURL(media,true);$('photoCaption').textContent=`${media.link_status||'Chưa xác nhận liên kết'} · ${media.source_path}`;if(!$('photoDialog').open)$('photoDialog').showModal();fitPhoto();}
     function appendPhotos(){
       const media=active().media||[],chamber=media.filter(photo=>photo.kind==='chamber_photo');
-      $('photoCount').textContent=`${chamber.length} ảnh sau bổ`;$('otherPhotoTitle').textContent=`Ảnh ngoài vỏ / đối chiếu mã (${media.length-chamber.length} ảnh)`;$('otherPhotoSection').hidden=media.length===chamber.length;$('otherPhotoSection').open=chamber.length===0;
+      $('photosTitle').textContent=selected==='chamber-archive'?'Kho toàn bộ ảnh trong bảng kê hộc':'Bộ ảnh hộc / múi ứng viên';
+      $('photoCount').textContent=`${chamber.length} ảnh trong bảng kê hộc`;$('otherPhotoTitle').textContent=`Ảnh ngoài vỏ / đối chiếu mã (${media.length-chamber.length} ảnh)`;$('otherPhotoSection').hidden=media.length===chamber.length;$('otherPhotoSection').open=chamber.length===0;
       $('openArchive').hidden=selected==='chamber-archive'||!data.cases.some(item=>item.id==='chamber-archive');
       if(!chamber.length)$('gallery').append(el('p','Chưa tìm được ảnh hộc sau bổ cho ca này. Không đủ bằng chứng ảnh để chốt tổng hộc/múi; hãy mở kho ảnh hộc hoặc giữ trạng thái chưa rõ.','notice'));
       for(const photo of media){
@@ -91,7 +92,7 @@
         img.src=imageURL(photo);img.alt=photo.label;img.loading='lazy';img.width=400;img.height=300;
         img.addEventListener('error',()=>{failed=true;button.replaceChildren(el('span','Ảnh xem trước chưa tải được. Bấm để thử lại; nếu vẫn lỗi, báo điều phối viên.','image-error'));});
         button.append(img);button.addEventListener('click',()=>{if(failed){failed=false;button.replaceChildren(img);img.src=imageURL(photo);}else showPhoto(photo);});
-        const caption=el('figcaption');caption.append(el('strong',photo.label),el('span',({random_photo:'Ảnh chụp tự do',chamber_photo:'Ảnh hộc sau bổ',rig_preview:'Ảnh ghép từ video'}[photo.kind]||photo.kind),'source'),el('span',photo.link_status||'Chưa xác nhận liên kết','source'));
+        const caption=el('figcaption');caption.append(el('strong',photo.label),el('span',({random_photo:'Ảnh chụp tự do',chamber_photo:'Ảnh từ bảng kê hộc — cần kiểm tra nội dung',rig_preview:'Ảnh ghép từ video'}[photo.kind]||photo.kind),'source'),el('span',photo.link_status||'Chưa xác nhận liên kết','source'));
         if(photo.locule_hint)caption.append(el('span',`Gợi ý chưa duyệt: ${photo.locule_hint}`,'source'));
         const details=el('details');details.append(el('summary','Đường dẫn nguồn'),el('span',photo.source_path,'mono small'));caption.append(details);figure.append(button,caption);$(photo.kind==='chamber_photo'?'gallery':'otherGallery').append(figure);
       }

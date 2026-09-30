@@ -21,6 +21,10 @@ manifests, images and videos remain read-only. User acceptance is pending.
   unreadable/unassigned photos, not only OCR matches.
 - Pack contains 657 media appearances; repeated appearances across cases do
   not imply additional unique photos or additional locules.
+- Independent UI review found no blocking navigation/data-loss issue. It
+  caught misleading "after opening" wording for the archive (19 manifest
+  entries are classified as non-locule photos). UI now labels the source
+  as the chamber manifest without asserting every photo depicts a locule.
 - Every per-case candidate is rendered, with other source photos separated.
   Complete literal OCR codes can add provisional candidates (including H6);
   incomplete/ambiguous codes and neighboring filenames do not establish IDs.
@@ -57,6 +61,11 @@ regions. Original facts are collapsible. No browser zoom setting is changed.
 - `test_video/.venv/bin/python -B -m unittest prototypes.durian_2d_projection.test_spike_graph`:
   14 passed. Total: 44 automated Python tests.
 - Inline browser JavaScript passes `node --check`; `git diff --check` clean.
+- Read-only HTTP/decode sweep: 589/589 unique media IDs passed (397 JPG,
+  189 HEIC, 3 PNG sources); HTTP 200, JPEG content type/signature, successful
+  decode, maximum dimension 1600 px. Zero failures; 147.1 seconds with at most
+  two requests in flight. Pack hash unchanged and official history remained
+  empty. This verifies image delivery, not visual label correctness.
 - Isolated browser check `scripts/check_label_review_browser.js` on port 8765:
   main document scrolled 581 px; zoomed image viewport 618 px with content
   1390 px reached scrollTop 772; fit returned top 0/content 618. Mobile CSS

@@ -146,8 +146,10 @@ They explicitly selected "Duyệt trên máy này trước" (local-machine revie
   example. Include every chamber-manifest photo in a searchable-case archive,
   preserve provisional associations, and flag incomplete per-fruit sets. No
   adjacency-based identity inference or automatic approval is authorized.
-- Status: implemented locally; integrated verification and user acceptance of
-  increment 2 pending. Full project PASS remains user-owned.
+- Status: integrated validation passed (44 Python tests, isolated browser
+  scroll/gallery/navigation checks, 589/589 JPEG responses decoded). Awaiting
+  user review of increment 2; full project PASS remains user-owned. Evidence:
+  `docs/plans/evidence/durian-two-track-pilot/label-review.md`.
 
 ## Risks And Recovery
 
