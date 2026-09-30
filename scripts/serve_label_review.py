@@ -99,9 +99,15 @@ class ReviewStore:
         return resolved
 
     def connection(self):
+        self.check_state()
         db = sqlite3.connect(self.db, timeout=5)
         db.row_factory = sqlite3.Row
         return db
+
+    def check_state(self):
+        if (self.state.resolve() != self.state or self.cache.resolve() != self.cache
+                or any(Path(str(self.db) + suffix).is_symlink() for suffix in ("", "-journal", "-wal", "-shm"))):
+            raise ReviewError(409, "Review state path changed; restart after restoring its directory")
 
     def events(self, db):
         return [dict(row) for row in db.execute("SELECT * FROM events WHERE pack_id=? ORDER BY event_id", (self.pack_id,))]
@@ -150,6 +156,7 @@ class ReviewStore:
         return result
 
     def thumbnail(self, media_id, full=False):
+        self.check_state()
         if media_id not in self.media:
             raise ReviewError(404, "Unknown media ID")
         path, registered, expected = self.media[media_id]
@@ -167,7 +174,7 @@ class ReviewStore:
             raise ReviewError(409, "Invalid cache entry")
         if target.is_file():
             return target.read_bytes()
-        if not self.conversions.acquire(timeout=1):
+        if not self.conversions.acquire(timeout=25):
             raise ReviewError(503, "Image conversion busy; retry shortly")
         try:
             # Read via an open descriptor, preventing path replacement from redirecting conversion.
@@ -190,6 +197,7 @@ class ReviewStore:
                 if (after.st_size, after.st_mtime_ns) != (opened.st_size, opened.st_mtime_ns):
                     raise ReviewError(409, "Media source changed during conversion")
             # Conversion is bounded; atomic replacement prevents partial concurrent cache reads.
+            self.check_state()
             temporary = self.cache / f"{key}-{secrets.token_hex(6)}.tmp"
             temporary.write_bytes(converted.stdout)
             temporary.replace(target)
@@ -220,6 +228,8 @@ class ReviewHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", kind + ("; charset=utf-8" if kind != "image/jpeg" else ""))
         self.send_header("Content-Length", str(len(content)))
         self.send_header("Cache-Control", "no-store")
+        if status == 503:
+            self.send_header("Retry-After", "2")
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
         if attachment:
@@ -298,7 +308,7 @@ def main():
     try:
         store = ReviewStore(args.pack, args.state_dir, args.media_root)
         server = ReviewServer(store, args.html, args.port)
-    except (OSError, ValueError, KeyError, TypeError) as error:
+    except (OSError, ValueError, KeyError, TypeError, ReviewError) as error:
         parser.exit(1, f"Cannot start review: {error}\n")
     print(f"Review: http://127.0.0.1:{server.server_port}/ pack_id={store.pack_id}", flush=True)
     try:

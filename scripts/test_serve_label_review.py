@@ -132,6 +132,16 @@ class LabelReviewTest(unittest.TestCase):
         link.symlink_to(outside)
         with self.assertRaisesRegex(ReviewError, "changed"):
             store.thumbnail("photo-1")
+        store.cache.rmdir()
+        store.cache.symlink_to(self.media, target_is_directory=True)
+        with self.assertRaisesRegex(ReviewError, "state path changed"):
+            store.thumbnail("photo-1")
+        store.cache.unlink()
+        store.cache.mkdir()
+        store.db.unlink()
+        store.db.symlink_to(self.image)
+        with self.assertRaisesRegex(ReviewError, "state path changed"):
+            store.snapshot()
 
     @unittest.skipUnless(shutil.which("magick"), "ImageMagick required for thumbnails")
     def test_serves_jpeg_thumbnail_and_rejects_changed_hash(self):
