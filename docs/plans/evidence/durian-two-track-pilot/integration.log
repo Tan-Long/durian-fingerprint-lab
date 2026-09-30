@@ -59,3 +59,12 @@ Observed: a260cb7e83044a0699e9deda21b04029281cf2bb.
 Coordinator checkout was clean after that push.
 This documentation-only follow-up records the observed publication.
 Both first increments remain AWAITING_USER_REVIEW; no user PASS recorded.
+
+2026-09-30 — Subsequent user acceptance
+User explicitly replied "Duyệt" to the report for snapshot
+2ef6f24e609670002ce0e3c52182ebae3c3d0d18.
+PASS scope: first fingerprint tooling, morphology audit and shared-index increment.
+This supersedes prior pending acceptance; full pilot and model accuracy are not PASS.
+Coordinator assigned both agents read-only evaluation-readiness assessments.
+No dataset edits, new evaluation policy, training, deployment or main merge authorized
+by this acceptance record. Existing incremental implementation plan remains active.

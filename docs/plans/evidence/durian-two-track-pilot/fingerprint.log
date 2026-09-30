@@ -39,3 +39,10 @@ User check:
 - Inspect CLI output and limits before accepting this tooling increment.
 - This run is not evidence of natural fingerprint identification accuracy.
 - User acceptance and independent recognition benchmark remain pending.
+
+2026-09-30 — Subsequent user acceptance
+User response to the coordinator's Vietnamese report: "Duyệt".
+Accepted snapshot: 2ef6f24e609670002ce0e3c52182ebae3c3d0d18.
+Acceptance: PASS for increment 1 tooling only; supersedes the pending status above.
+No identity labels, calibrated thresholds or recognition accuracy were accepted.
+Next assignment: read-only evaluation-readiness assessment; no model training.

@@ -7,9 +7,13 @@ Date: 2026-09-30
 Active. The user authorized publishing the existing code to GitHub and then
 implementing the agreed plan incrementally with two sub-agents.
 
-User acceptance is pending. On 2026-09-30 the user required project-specific
-logs, committed evidence, coordinator review, and their own check before PASS.
-Passing automated checks does not grant project acceptance.
+On 2026-09-30 the user explicitly accepted the first increment with "Duyệt"
+after reviewing the Vietnamese report for commit
+`2ef6f24e609670002ce0e3c52182ebae3c3d0d18`. Fingerprint tooling, morphology
+auditing, and the shared index are PASS for that increment only. Individual
+labels, model accuracy, and full pilot acceptance remain unapproved.
+Project-specific logs, committed evidence, coordinator review, and user review
+remain required for subsequent increments; automated checks do not grant PASS.
 
 ## Outcome
 
@@ -77,15 +81,15 @@ task database or orchestration lifecycle.
 
 | Track | Agent | Implementation | Coordinator review | User acceptance |
 | --- | --- | --- | --- | --- |
-| Fingerprint | `/root/fingerprint` | First increment integrated at `8b6ff5d` | Unit tests passed; real-data smoke is diagnostic only | Pending |
-| Morphology | `/root/morphology` | First increment integrated at `0dab7ce`, `14d28d4` | Six audit tests passed; real workbook audit reproduced | Pending |
-| Shared data | Coordinator | Inventory committed at `87fdda6` | Two tests passed; cross-review found no blocking issue | Pending |
+| Fingerprint | `/root/fingerprint` | First increment integrated at `8b6ff5d` | Unit tests passed; real-data smoke is diagnostic only | PASS — increment 1 only |
+| Morphology | `/root/morphology` | First increment integrated at `0dab7ce`, `14d28d4` | Six audit tests passed; real workbook audit reproduced | PASS — increment 1 only |
+| Shared data | Coordinator | Inventory committed at `87fdda6` | Two tests passed; cross-review found no blocking issue | PASS — increment 1 only |
 
 - Agents report files, commit SHA, exact check commands, observed results,
   artifacts, and unresolved risks to the coordinator.
 - Each project has its own evidence log: `fingerprint.log` and `morphology.log`.
   Shared checks and publication evidence go in `integration.log`.
-- After review and publication, the first increment is **AWAITING_USER_REVIEW**.
+- After review and publication, each new increment is **AWAITING_USER_REVIEW**.
   Only explicit user acceptance changes the corresponding reviewed increment
   to **PASS**. Record the accepted commit and scope here.
 - A rejection or new request stays in this plan as follow-up work. Full pilot
@@ -105,9 +109,14 @@ task database or orchestration lifecycle.
 - User review scope: source traceability, diagnostic query behavior, workbook
   issue reporting, and safe output handling. Recognition accuracy and morphology
   prediction have not yet been evaluated.
-- Current acceptance: **AWAITING_USER_REVIEW** for both first increments.
-  No user PASS has been recorded. Wait for that review before advancing these
-  increments to the next agreed stage.
+- Current acceptance: **PASS — increment 1 only**, explicitly accepted by the
+  user with "Duyệt" on 2026-09-30 at commit
+  `2ef6f24e609670002ce0e3c52182ebae3c3d0d18` for the review scope above.
+- Next bounded step: both agents assess evaluation readiness read-only;
+  identify evidence gaps and decisions before freezing labels or evaluation
+  groups. Approval of the audit does not approve or repair its input labels.
+- Agent-to-agent coordination and reports use English; user-facing reports
+  and approval requests use Vietnamese, as requested by the user.
 
 ## Risks And Recovery
 
@@ -135,7 +144,7 @@ task database or orchestration lifecycle.
 - [x] Produce shared media index and workbook audit without modifying sources.
 - [x] Integrate and validate first fingerprint and morphology increments.
 - [x] Publish validated increment to GitHub (`a260cb7`, remote SHA verified).
-- [ ] User checks and accepts the first increment of each project.
+- [x] User checks and accepts the first increment of each project (`2ef6f24`, "Duyệt").
 - [ ] Review label issues and freeze evaluation groups.
 - [ ] Run independent fingerprint and morphology benchmarks.
 - [ ] Integrate evidence viewer and record final limits.
@@ -180,8 +189,8 @@ In progress. No benchmark accuracy or production readiness has been established.
   these counts are 77, 77, 83 and zero, respectively. They are not approved labels.
 - Final integrated validation: 8 data-tool tests, 11 ingest/viewer/matcher tests,
   and 14 projection/spike tests passed (33 total). Logs retain evidence and limits.
-- Both agents returned their reviewed first increments. Full project PASS and
-  model evaluation remain pending the user's review and later milestones.
+- Both agents returned their reviewed first increments, now accepted by the
+  user. Full project PASS and model evaluation remain pending later milestones.
 - Published the code, per-project logs, test transcript, diagnostic query and
   morphology summary at `a260cb7e83044a0699e9deda21b04029281cf2bb` on
   `origin/agent/add-durian-2d-projection`; the remote SHA matched locally.

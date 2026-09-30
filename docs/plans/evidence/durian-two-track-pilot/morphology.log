@@ -59,3 +59,10 @@ Inspect conflict cell locations, unmatched IDs and target-specific coverage.
 No inferred correction, training split or prediction model is included.
 Legacy OCR H1–H5 handling is still deferred until a reviewed per-fruit list exists.
 User acceptance remains pending.
+
+2026-09-30 — Subsequent user acceptance
+User response to the coordinator's Vietnamese report: "Duyệt".
+Accepted snapshot: 2ef6f24e609670002ce0e3c52182ebae3c3d0d18.
+Acceptance: PASS for increment 1 audit tooling only; supersedes the pending status above.
+Individual labels, inferred corrections and prediction accuracy remain unapproved.
+Next assignment: read-only evaluation-readiness assessment; no label edits or training.
