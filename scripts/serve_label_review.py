@@ -22,6 +22,7 @@ import re
 import secrets
 import sqlite3
 import subprocess
+import tempfile
 import threading
 from urllib.parse import urlsplit
 
@@ -188,11 +189,15 @@ class ReviewStore:
                 if expected and actual != expected:
                     raise ReviewError(409, "Image hash differs from review evidence; rebuild the pack")
                 handle.seek(0)
-                converted = subprocess.run(
-                    ["magick", "-limit", "memory", "128MiB", "-limit", "map", "256MiB", "-limit", "disk", "0",
-                     f"{source.suffix[1:]}:-[0]", "-auto-orient", "-thumbnail", f"{size}x{size}>",
-                     "-strip", "-quality", "85", "jpeg:-"], stdin=handle, capture_output=True, timeout=30,
-                    env={**os.environ, "MAGICK_THREAD_LIMIT": "1"}, check=True)
+                # Full-resolution phone decoding exceeds RAM limits before resizing;
+                # bounded spill lives in disposable state, never beside source images.
+                self.check_state()
+                with tempfile.TemporaryDirectory(prefix="convert-", dir=self.cache) as temporary:
+                    converted = subprocess.run(
+                        ["magick", "-limit", "memory", "128MiB", "-limit", "map", "256MiB", "-limit", "disk", "1GiB",
+                         f"{source.suffix[1:]}:-[0]", "-auto-orient", "-thumbnail", f"{size}x{size}>",
+                         "-strip", "-quality", "85", "jpeg:-"], stdin=handle, capture_output=True, timeout=30,
+                        env={**os.environ, "MAGICK_THREAD_LIMIT": "1", "MAGICK_TEMPORARY_PATH": temporary}, check=True)
                 after = os.fstat(handle.fileno())
                 if (after.st_size, after.st_mtime_ns) != (opened.st_size, opened.st_mtime_ns):
                     raise ReviewError(409, "Media source changed during conversion")

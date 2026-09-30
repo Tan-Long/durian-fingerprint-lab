@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import shutil
 import sqlite3
+import subprocess
 import tempfile
 import threading
 import unittest
@@ -145,11 +146,17 @@ class LabelReviewTest(unittest.TestCase):
 
     @unittest.skipUnless(shutil.which("magick"), "ImageMagick required for thumbnails")
     def test_serves_jpeg_thumbnail_and_rejects_changed_hash(self):
+        # Phone-sized decoding must exercise ImageMagick's pixel-cache limits.
+        self.image.write_bytes(subprocess.check_output(["magick", "-size", "4000x3000", "gradient:green-yellow", "png:-"]))
+        self.content["cases"][0]["media"][0]["sha256"] = hashlib.sha256(self.image.read_bytes()).hexdigest()
+        self.pack.write_text(json.dumps(self.content))
         store = self.store()
         with running(store, self.html) as server:
             status, thumbnail = request(server, "GET", "/media/photo-1")
             self.assertEqual(status, 200)
             self.assertTrue(thumbnail.startswith(b"\xff\xd8"))
+            dimensions = subprocess.check_output(["magick", "identify", "-format", "%w %h", "jpeg:-"], input=thumbnail)
+            self.assertLessEqual(max(map(int, dimensions.split())), 1600)
             self.assertEqual(request(server, "GET", "/media/photo-1")[1], thumbnail)
             self.image.write_bytes(self.image.read_bytes() + b"changed")
             self.assertEqual(request(server, "GET", "/media/photo-1")[0], 409)
