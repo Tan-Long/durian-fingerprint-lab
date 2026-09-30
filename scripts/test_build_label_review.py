@@ -115,6 +115,31 @@ class LabelReviewTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "không khớp hồ sơ"):
                 build_pack(*args, observations_path=observations)
 
+    def test_disputed_then_self_checked_images_are_first_without_losing_media(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            args = self.fixture(root)
+            unrelated, inspected = root / "source" / "unrelated.jpg", root / "source" / "inspected.jpg"
+            unrelated.write_bytes(b"unrelated image")
+            inspected.write_bytes(b"visually inspected image")
+            with args[1].open(newline="") as handle:
+                rows = list(csv.reader(handle))
+            rows.insert(1, ["N1V1C1", str(unrelated), sha256(unrelated), "random_photo"])
+            rows.append(["N1V1C1", str(inspected), sha256(inspected), "random_photo"])
+            with args[1].open("w", newline="") as handle:
+                csv.writer(handle).writerows(rows)
+            observations = root / "observations.json"
+            observations.write_text(json.dumps({"sources": {"inspected.jpg": sha256(inspected)}, "findings": {}}))
+            before = build_pack(*args)
+            after = build_pack(*args, observations_path=observations)
+            for original, ordered in zip(before["cases"], after["cases"]):
+                self.assertEqual({m["id"] for m in original["media"]}, {m["id"] for m in ordered["media"]})
+            identity = next(c for c in after["cases"] if c["id"].startswith("identity-"))
+            self.assertEqual(Path(identity["media"][0]["source_path"]).name, "one.jpg")
+            self.assertEqual(Path(identity["media"][1]["source_path"]).name, "inspected.jpg")
+            count = next(c for c in after["cases"] if c["id"] == "counts-N1V1C1")
+            self.assertEqual(Path(count["media"][0]["source_path"]).name, "inspected.jpg")
+
 
 if __name__ == "__main__":
     unittest.main()

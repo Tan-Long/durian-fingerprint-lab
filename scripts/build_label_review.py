@@ -246,6 +246,7 @@ def build_pack(audit_path, media_path, summary_path, chamber_path=None, preview_
 
     for case in cases:
         attach(case)
+    observed_hashes = set()
     if observations_path:
         observations = json.loads(Path(observations_path).read_text(encoding="utf-8"))
         by_id = {case["id"]: case for case in cases}
@@ -255,6 +256,14 @@ def build_pack(audit_path, media_path, summary_path, chamber_path=None, preview_
             by_id[case_id]["findings"].extend("Tự kiểm tra của điều phối, chưa xác nhận nhãn: " + f for f in findings)
         sources["observations"] = {"path": str(Path(observations_path).resolve()),
                                    "sha256": sha256(observations_path), "sources": observations.get("sources", {})}
+        observed_hashes = {value for value in observations.get("sources", {}).values()
+                           if isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value)}
+    for case in cases:
+        disputed_prefix = case["id"].removeprefix("identity-") if case["id"].startswith("identity-") else None
+        case["media"].sort(key=lambda media: (
+            not (disputed_prefix and media["sha256"].startswith(disputed_prefix)),
+            media["sha256"] not in observed_hashes,
+        ))
     sources["verified_image_hashes"] = verified_images
     return {"schema_version": 1, "sources": sources, "cases": sorted(cases, key=lambda c: (c["priority"], c["id"]))}
 
