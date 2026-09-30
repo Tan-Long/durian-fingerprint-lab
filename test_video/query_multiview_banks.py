@@ -11,6 +11,15 @@ per root/sample/session/camera, sorted by geometric inliers, non-dark inliers,
 then epipolar error. These are uncalibrated evidence, not identity decisions.
 The existing color mask may include labels/background; this is not an accuracy
 benchmark. No video decoding, model fitting, or writes to source banks occur.
+
+Fruit ranking groups exact recorded sample IDs, not verified identities. Each
+fruit retains its best geometric row and indexes into candidates for supporting
+rows. Neither repeated views nor cross-encoder coarse scores boost fruit rank.
+
+Batch mode: --batch queries.json replaces --image. The JSON must be a nonempty
+array of {"query_id": "phone-1", "image": "phone.HEIC"}; relative image paths are
+resolved against the JSON file's directory. IDs must be unique. Results/errors
+and timings go to stdout; exit status is 2 if any query fails. No globbing occurs.
 """
 
 from __future__ import annotations
@@ -85,6 +94,26 @@ def evidence_order(row: dict) -> tuple:
     return (-row["geometric_inliers"], -row["non_dark_inliers"], float("inf") if error is None else error)
 
 
+def candidate_order(row: dict) -> tuple:
+    """Geometry first, then stable provenance only; never cross-encoder coarse scores."""
+    return evidence_order(row) + tuple(row[key] for key in (
+        "sample_id", "session_id", "camera", "bank_root", "bank_path", "view_index"))
+
+
+def rank_fruits(candidates: list[dict]) -> list[dict]:
+    """Group literal recorded IDs; supporting indexes refer to the supplied list."""
+    grouped = {}
+    for index, row in enumerate(candidates):
+        grouped.setdefault(row["sample_id"], []).append(index)
+    ranking = []
+    for sample_id, indexes in grouped.items():
+        indexes.sort(key=lambda index: candidate_order(candidates[index]))
+        ranking.append({"sample_id": sample_id, "best_candidate": candidates[indexes[0]],
+                        "supporting_candidate_indexes": indexes})
+    ranking.sort(key=lambda row: candidate_order(row["best_candidate"]))
+    return [{"rank": rank, **row} for rank, row in enumerate(ranking, 1)]
+
+
 def query_banks(features: dict, roots: list[Path], top_k: int = 20) -> dict:
     """Keep at most top_k view references per encoder; load one feature bank at a time."""
     if top_k <= 0:
@@ -92,8 +121,10 @@ def query_banks(features: dict, roots: list[Path], top_k: int = 20) -> dict:
     report = {
         "query_features": len(features["points"]), "top_views_per_root": top_k,
         "identity_verdict": None,
-        "notice": "Uncalibrated geometric evidence. READY is ingest QC, not recognition accuracy. Labels/background may influence matching.",
-        "roots": [], "candidates": [],
+        "notice": ("Uncalibrated geometric evidence. READY is ingest QC, not recognition accuracy. "
+                   "Labels/background may influence matching. Fruit ranking groups exact recorded sample IDs, "
+                   "not verified identities across collections. Provenance breaks geometric ties, not stronger evidence."),
+        "roots": [], "candidates": [], "fruit_ranking": [],
     }
     if not len(features["descriptors"]):
         report["query_issue"] = "no query features"
@@ -166,29 +197,83 @@ def query_banks(features: dict, roots: list[Path], top_k: int = 20) -> dict:
                     "non_dark_inliers": match["non_dark_inliers"], "median_epipolar_error_px": match["error"],
                     "tested_views_in_camera": len(selected),
                 })
-            report["candidates"].append(min(candidates, key=evidence_order))
+            report["candidates"].append(min(candidates, key=candidate_order))
         report["roots"].append(stats)
-    report["candidates"].sort(key=evidence_order)
+    report["candidates"].sort(key=candidate_order)
+    report["fruit_ranking"] = rank_fruits(report["candidates"])
     return report
+
+
+def query_image(path: Path, roots: list[Path], top_k: int = 20) -> dict:
+    started = time.perf_counter()
+    image = read_image(path, 1000)
+    mask = fruit_mask(image)
+    report = query_banks(extract_features(image, mask), roots, top_k)
+    report.update(image=str(path.resolve()), fruit_coverage=float(mask.mean()),
+                  elapsed_seconds=time.perf_counter() - started)
+    return report
+
+
+def read_batch(path: Path) -> list[dict]:
+    items = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(items, list) or not items:
+        raise ValueError("batch must be a nonempty JSON array of {query_id, image}")
+    seen = set()
+    queries = []
+    for index, item in enumerate(items):
+        if (not isinstance(item, dict) or set(item) != {"query_id", "image"}
+                or any(not isinstance(item[key], str) or not item[key].strip()
+                       or "\x00" in item[key] for key in ("query_id", "image"))):
+            raise ValueError(f"batch item {index}: requires exactly nonempty string query_id and image")
+        if item["query_id"] in seen:
+            raise ValueError(f"batch item {index}: duplicate query_id {item['query_id']!r}")
+        seen.add(item["query_id"])
+        image_path = Path(item["image"])
+        if not image_path.is_absolute():
+            image_path = path.resolve().parent / image_path
+        queries.append({"query_id": item["query_id"], "image": str(image_path.resolve())})
+    return queries
+
+
+QUERY_ERRORS = (OSError, ValueError, KeyError, cv2.error, subprocess.CalledProcessError)
+
+
+def query_batch(queries: list[dict], roots: list[Path], top_k: int = 20) -> dict:
+    started = time.perf_counter()
+    results = []
+    for query in queries:
+        query_started = time.perf_counter()
+        row = {"query_id": query["query_id"], "image": query["image"]}
+        try:
+            row.update(status="ok", result=query_image(Path(query["image"]), roots, top_k))
+        except QUERY_ERRORS as exc:
+            row.update(status="error", error={"type": type(exc).__name__, "message": str(exc)})
+        row["elapsed_seconds"] = time.perf_counter() - query_started
+        results.append(row)
+    return {"queries": results, "elapsed_seconds": time.perf_counter() - started,
+            "identity_verdict": None}
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--image", type=Path, required=True)
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument("--image", type=Path)
+    source.add_argument("--batch", type=Path, help="JSON array of explicit query_id/image pairs")
     parser.add_argument("--bank-root", type=Path, action="append", required=True)
     parser.add_argument("--top-k", type=int, default=20, help="candidate views per root encoder (default: 20)")
     args = parser.parse_args()
     if args.top_k <= 0:
         parser.error("--top-k must be positive")
-    started = time.perf_counter()
     try:
-        image = read_image(args.image, 1000)
-        mask = fruit_mask(image)
-        report = query_banks(extract_features(image, mask), args.bank_root, args.top_k)
-        report.update(image=str(args.image.resolve()), fruit_coverage=float(mask.mean()), elapsed_seconds=time.perf_counter() - started)
-    except (OSError, ValueError, KeyError, cv2.error, subprocess.CalledProcessError) as exc:
+        if args.batch is not None:
+            report = query_batch(read_batch(args.batch), args.bank_root, args.top_k)
+        else:
+            report = query_image(args.image, args.bank_root, args.top_k)
+    except QUERY_ERRORS as exc:
         parser.exit(2, f"query failed: {exc}\n")
     print(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False))
+    if args.batch is not None and any(row["status"] == "error" for row in report["queries"]):
+        parser.exit(2)
 
 
 if __name__ == "__main__":
