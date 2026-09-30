@@ -39,8 +39,7 @@ def build_pack():
     metrics, predictions = [], []
     for target, result in morphology["targets"].items():
         metric = result["metrics"]
-        metrics.append([target, result["model"]["constant"], result["model"]["train_count"],
-                        metric["n"], metric["mae"], metric["rmse"], metric["bias"]])
+        metrics.append([target, result["model"]["constant"], metric["mae"], metric["rmse"], metric["bias"]])
         for prediction in result["predictions"]:
             predictions.append([target, prediction["fruit_id"],
                                 heldout[prediction["fruit_id"]]["targets"][target]["value"],
@@ -107,7 +106,7 @@ def build_pack():
                 "media": [],
                 "result_tables": [
                     {"title": "Nhãn và dự đoán từng trái test giả", "columns": ["Mục tiêu", "Trái test", "Nhãn fixture", "Dự đoán"], "rows": predictions},
-                    {"title": "Sai số trên fixture", "columns": ["Mục tiêu", "Trung vị train", "Số train", "Số test", "MAE", "RMSE", "Bias"], "rows": metrics},
+                    {"title": "Sai số trên fixture", "columns": ["Mục tiêu", "Trung vị train", "MAE", "RMSE", "Bias"], "rows": metrics},
                 ],
                 "raw_result": {"input": data, "output": morphology},
             },
