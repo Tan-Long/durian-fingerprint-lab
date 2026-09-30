@@ -48,3 +48,14 @@ User acceptance rule:
 Technical verification, publication and user acceptance are separate.
 The coordinator prepares reviewed results; the user checks before project PASS.
 No CI execution, merge blocking, main-branch merge, or model accuracy is claimed.
+
+Integrated review and publication:
+Final test transcript: tests.log, 33 tests OK across all three local commands.
+Verified index/audit use the same samples.csv hash; all 88 original UNREVIEWED
+statuses are preserved in morphology crosswalk sample_status.
+Published code and evidence commit: a260cb7e83044a0699e9deda21b04029281cf2bb.
+Command: git ls-remote origin refs/heads/agent/add-durian-2d-projection
+Observed: a260cb7e83044a0699e9deda21b04029281cf2bb.
+Coordinator checkout was clean after that push.
+This documentation-only follow-up records the observed publication.
+Both first increments remain AWAITING_USER_REVIEW; no user PASS recorded.

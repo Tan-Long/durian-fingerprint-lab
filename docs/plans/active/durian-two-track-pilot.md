@@ -134,7 +134,7 @@ task database or orchestration lifecycle.
 - [x] Start fingerprint and morphology agents in separate worktrees.
 - [x] Produce shared media index and workbook audit without modifying sources.
 - [x] Integrate and validate first fingerprint and morphology increments.
-- [ ] Publish validated increment to GitHub.
+- [x] Publish validated increment to GitHub (`a260cb7`, remote SHA verified).
 - [ ] User checks and accepts the first increment of each project.
 - [ ] Review label issues and freeze evaluation groups.
 - [ ] Run independent fingerprint and morphology benchmarks.
@@ -182,3 +182,7 @@ In progress. No benchmark accuracy or production readiness has been established.
   and 14 projection/spike tests passed (33 total). Logs retain evidence and limits.
 - Both agents returned their reviewed first increments. Full project PASS and
   model evaluation remain pending the user's review and later milestones.
+- Published the code, per-project logs, test transcript, diagnostic query and
+  morphology summary at `a260cb7e83044a0699e9deda21b04029281cf2bb` on
+  `origin/agent/add-durian-2d-projection`; the remote SHA matched locally.
+  This subsequent documentation update records that observed publication.
