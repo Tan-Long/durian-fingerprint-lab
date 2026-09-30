@@ -85,8 +85,8 @@ accuracy claim.
 
 - [x] Inspect repository, dataset inventory, code paths, and workbook.
 - [x] Baseline validation: 8 ingest/viewer tests and 14 spike/projection tests pass.
-- [ ] Publish source baseline to GitHub and verify remote commit.
-- [ ] Start fingerprint and morphology agents in separate worktrees.
+- [x] Publish source baseline to GitHub and verify remote commit (`bfa3925`).
+- [x] Start fingerprint and morphology agents in separate worktrees.
 - [ ] Produce shared media index and workbook audit without modifying sources.
 - [ ] Integrate and validate first fingerprint and morphology increments.
 - [ ] Publish validated increment to GitHub.
@@ -108,3 +108,22 @@ accuracy claim.
 ## Result
 
 In progress. No benchmark accuracy or production readiness has been established.
+
+### First Increment Evidence
+
+- Published baseline `bfa3925` to `origin/agent/add-durian-2d-projection`;
+  verified the remote SHA. Original dataset and generated outputs remain local.
+- Worktrees: `.worktrees/fingerprint` (`agent/fingerprint-pilot`) and
+  `.worktrees/morphology` (`agent/morphology-pilot`).
+- `scripts/build_dataset_index.py` indexed 325,311 migration rows into 3,146
+  media rows: 210 RGB videos, 2,509 random photos and 427 chamber photos.
+  All selected paths exist. There are 1,343 media rows without a sample ID
+  (1,058 random photos, 285 chamber photos); these remain unresolved.
+- Inventory covers videos for 87 recorded IDs, random photos for 72, and
+  chamber photos with recorded IDs for 62. This is not verified label coverage.
+- Index artifacts: `output/data-index/{samples.csv,media.csv,summary.json}`;
+  ignored by Git. Summary records hashes of both source manifests, not a new
+  verification of all media content.
+- A visually inspected phone image `N1V11C1/IMG20260827114814.jpg` contains
+  handwritten numbers on the shell and a stem label. It may test the query
+  plumbing but cannot establish natural fingerprint accuracy.
