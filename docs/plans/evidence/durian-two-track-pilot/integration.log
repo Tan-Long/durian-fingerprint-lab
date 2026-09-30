@@ -68,3 +68,23 @@ This supersedes prior pending acceptance; full pilot and model accuracy are not 
 Coordinator assigned both agents read-only evaluation-readiness assessments.
 No dataset edits, new evaluation policy, training, deployment or main merge authorized
 by this acceptance record. Existing incremental implementation plan remains active.
+
+2026-09-30 — Core-code increment after pausing photo work
+User instruction: report both agents' progress, skip the two photo tasks,
+prioritize core code. Source images, organized copies and official review state
+were not modified. Deferred per-photo API remains on agent/photo-review-server.
+
+Reviewed and cherry-picked:
+- Fingerprint a89903a -> 217546e: recorded-ID ranking and explicit batch queries.
+- Morphology 55744d2 -> 7d2ccfe: reviewed-input constant-median reference pipeline.
+Root owns README, shared plan and the separate project evidence logs.
+
+Integrated snapshot 7d2ccfe: 33 script tests + 18 matcher/ingest tests +
+14 projection tests = 65 passed, no skips, all exit 0. Commands and complete
+output appended to tests.log. git diff --check and morphology CLI help pass.
+Tests include both real subprocess CLI flows on synthetic fixtures; no actual
+dataset benchmark or recognized-identity/prediction-accuracy claim.
+No new dependencies, external services, hooks or CI/merge settings introduced.
+
+Acceptance for this increment: AWAITING_USER_REVIEW.
+Only user review can grant PASS; first-increment acceptance remains unchanged.

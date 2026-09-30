@@ -151,7 +151,7 @@ They explicitly selected "Duyệt trên máy này trước" (local-machine revie
   user review of increment 2; full project PASS remains user-owned. Evidence:
   `docs/plans/evidence/durian-two-track-pilot/label-review.md`.
 
-### Current User Priority: Re-sort Chamber Photos by Visible Fruit Labels
+### Photo Organization Follow-up (Delivered)
 
 - User asked to recheck all images in the three original camera directories
   under `Chụp Hộc` and organize by fruit label. Preserve originals and create
@@ -180,6 +180,43 @@ They explicitly selected "Duyệt trên máy này trước" (local-machine revie
   directly in their fruit/unresolved groups; 15 duplicate suffixes and one
   `h_chua_ro` preserve uncertainty and avoid overwrite. 46 local tests passed.
   Old layout retained in sibling `Hoc_theo_nhan_qua_20260930_truoc_doi_ten`.
+
+### Current User Priority: Core Code Before Further Photo Work
+
+Authority: user asked for both agents' progress and explicitly said to skip
+the two photo tasks and handle code first. Stop further photo-review/UI and
+organization work; retain their artifacts and deferred per-photo API branch.
+
+- Both project cores are at accepted increment-1 tooling, not validated models.
+  The intervening work was photo-review support, not model accuracy progress.
+- Fingerprint agent: additive unique-fruit ranking on geometric evidence and
+  batch queries through the existing matcher. Preserve per-bank encoders,
+  traceability and `identity_verdict:null`; no uncalibrated accept/reject policy.
+- Morphology agent: minimal train/predict/evaluate baseline for explicitly
+  supplied per-fruit features, reviewed targets and train/test assignments.
+  Reject fruit overlap and unapproved/after-opening inputs. Tests use synthetic
+  fixtures; do not infer feature timing, freeze real splits or train on the
+  current unreviewed workbook/photo associations.
+- Both agents branch from published `a30a112`, own separate code/tests and
+  commit bounded increments. Coordinator owns integration and project logs.
+- Fingerprint contract: `fruit_ranking` groups exact recorded `sample_id`
+  strings by best geometric evidence, with references into unchanged candidate
+  rows. This is not verified identity resolution across collections. Batch
+  input is an explicit JSON array of unique `query_id`/`image` pairs; errors
+  remain per-query and cause exit 2 without losing successful query reports.
+- Morphology contract: one explicit JSON input declares feature timing and
+  attestations, per-fruit train/test membership, and per-target reviewed labels.
+  The first baseline is the training median per target; features are validated
+  but deliberately unused. Missing/unapproved labels block only their target;
+  no silent row exclusion or evaluation on the real dataset is authorized.
+- Completion for this code increment requires executable end-to-end fixture
+  proof and integrated regression tests, followed by user review. Real-world
+  recognition/prediction accuracy stays unevaluated until evidence is approved.
+- Delivered: fingerprint `a89903a` integrated as `217546e`; morphology
+  `55744d2` integrated as `7d2ccfe`. Coordinator reviewed code/tests and ran
+  all three suites: 33 + 18 + 14 = 65 tests passed, no skips. Both actual CLI
+  flows are exercised with synthetic fixtures. Separate project logs and
+  `tests.log` record proof. Status: **AWAITING_USER_REVIEW**, not accuracy PASS.
 
 ## Risks And Recovery
 

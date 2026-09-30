@@ -74,6 +74,49 @@ Lệnh trả JSON ra stdout, dùng bộ mã hóa riêng của từng bank root v
 phiên `READY`. Điểm khớp là bằng chứng thử nghiệm chưa hiệu chuẩn; kết quả
 `identity_verdict` vẫn là `null`. Chữ viết, tem và nền có thể ảnh hưởng matcher.
 
+`fruit_ranking` gom theo chuỗi `sample_id` được ghi trong bank, chọn bằng chứng
+hình học tốt nhất và giữ chỉ mục các dòng hỗ trợ trong `candidates`. Nhiều
+camera/phiên không tự cộng điểm; trùng chuỗi mã chưa chứng minh cùng một quả
+giữa các collection. Thứ tự khi bằng điểm chỉ để kết quả ổn định.
+
+Truy vấn theo lô: thay `--image` bằng `--batch /path/to/queries.json`, giữ các
+tham số `--bank-root`. Nội dung file:
+
+```json
+[
+  {"query_id": "phone-1", "image": "phone-1.jpg"},
+  {"query_id": "phone-2", "image": "phone-2.HEIC"}
+]
+```
+
+Đường dẫn tương đối tính từ thư mục chứa JSON; mã truy vấn phải duy nhất.
+Kết quả từng ảnh gồm bằng chứng hoặc lỗi và thời gian chạy. Lỗi một ảnh không
+làm mất kết quả các ảnh khác; mã thoát là `2` nếu có lỗi. Đây chưa phải bộ đo
+độ chính xác trên tập kiểm thử đã duyệt.
+
+Baseline hộc/múi/vỏ dùng Python chuẩn, không đọc Excel hay tự chọn tập train/test:
+
+```sh
+python3 -B scripts/morphology_baseline.py --help
+python3 -B scripts/morphology_baseline.py /path/to/reviewed-fruits.json \
+  --output /path/to/new-baseline-result.json
+```
+
+Schema JSON có trong `--help`: `feature_definitions` khai báo thời điểm đo trước
+khi bổ cùng người xác nhận/bằng chứng; mỗi phần tử `fruits` là một quả duy nhất,
+có `fruit_id`, `split`, `features` và nhãn từng target với người duyệt/bằng chứng.
+Target hỗ trợ: `locule_count`, `aril_count`, `shell_thickness_mm` (đơn vị mm).
+Phải tự giải quyết các mã khác nhau nhưng cùng một quả trước khi nhập.
+
+Code lấy **trung vị nhãn train** làm dự đoán cố định, trả MAE/RMSE/bias trên test.
+Các feature được kiểm tra nhưng **chưa dùng để dự đoán**; đây là mốc đối chiếu,
+không phải mô hình học từ ảnh. Nhãn thiếu/sai/chưa duyệt chặn riêng target đó,
+không tự bỏ hàng. Trùng quả giữa các tập hoặc feature không xác nhận đo trước
+khi bổ sẽ bị từ chối. Không ghi đè file có sẵn; mã thoát `0` khi chạy đủ,
+`1` khi lỗi đầu vào/IO, `2` khi có target bị chặn nhưng vẫn lưu kết quả còn lại.
+Chỉ kiểm thử bằng dữ liệu giả lập ở bước này; `valid` trong audit không phải
+nhãn đã duyệt và kết quả chạy không tự cấp PASS.
+
 Kiểm tra các công cụ dữ liệu và matcher:
 
 ```sh

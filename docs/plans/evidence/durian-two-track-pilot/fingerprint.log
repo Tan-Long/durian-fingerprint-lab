@@ -46,3 +46,30 @@ Accepted snapshot: 2ef6f24e609670002ce0e3c52182ebae3c3d0d18.
 Acceptance: PASS for increment 1 tooling only; supersedes the pending status above.
 No identity labels, calibrated thresholds or recognition accuracy were accepted.
 Next assignment: read-only evaluation-readiness assessment; no model training.
+
+2026-09-30 — Core-code priority: recorded-fruit ranking and batch queries
+Authority: user requested skipping photo work and resuming both project cores.
+Agent branch: agent/fingerprint-ranking-batch from a30a112.
+Agent commit: a89903a29e267c3b311727e021042e835f1802f6.
+Integrated commit: 217546e (coordinator reviewed complete code/test diff).
+
+Changes:
+- Add fruit_ranking grouped by exact recorded sample_id, ranked by best
+  geometric inliers/non-dark inliers/epipolar error, then stable provenance.
+- Supporting indexes reference the final candidates array. Duplicate cameras
+  and sessions do not accumulate rank; cross-root coarse scores never compare.
+- --batch accepts explicit unique query_id/image pairs. Relative paths use
+  the input JSON directory. Per-query failures retain other results; exit 2.
+- Both CLI modes reuse the same image loading, features and bank matcher.
+
+Coordinator command:
+test_video/.venv/bin/python -B -m unittest discover -s test_video -p 'test_query_multiview_banks.py' -v
+Observed: 10 tests passed, none skipped, exit 0. Generated PNG CLI exercises
+real image decode/extraction and fixture banks; no SoilTECH images used.
+Tests cover two encoders, repeated sessions/cameras, stable ties, exact IDs,
+malformed/empty batches, partial failure, timings and single-image compatibility.
+
+Limits: no calibrated identity verdict, benchmark, threshold or accuracy claim.
+Recorded-ID grouping does not resolve identity across arbitrary collections.
+Batch rereads banks per query; no speculative persistent index/cache added.
+Acceptance: AWAITING_USER_REVIEW for this increment, not model PASS.

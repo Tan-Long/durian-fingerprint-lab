@@ -66,3 +66,41 @@ Accepted snapshot: 2ef6f24e609670002ce0e3c52182ebae3c3d0d18.
 Acceptance: PASS for increment 1 audit tooling only; supersedes the pending status above.
 Individual labels, inferred corrections and prediction accuracy remain unapproved.
 Next assignment: read-only evaluation-readiness assessment; no label edits or training.
+
+2026-09-30 — Core-code priority: explicit-input median baseline
+Authority: user requested skipping photo tasks and resuming project code;
+active plan Approach 5/6 requires reviewed labels, fruit-grouped splits and
+before-opening inputs. No real evaluation groups or labels were approved here.
+Agent branch: agent/morphology-baseline from a30a112.
+Agent commit: 55744d28a9fd3110719cca09819cd2ae0667d5f8.
+Integrated commit: 7d2ccfe; coordinator reviewed full module and all tests.
+Independent fingerprint-agent read-only review found no concrete blocker.
+
+Changes:
+- Stdlib CLI scripts/morphology_baseline.py takes explicit JSON, trains a
+  constant median per target, predicts test fruits and reports n/MAE/RMSE/bias.
+- Features are validated but UNUSED; this is a reference floor, not an image
+  predictor. No label importing, auto-splits, rounding or thresholds.
+- Duplicate fruit IDs, missing/nonfinite features and untrusted timing fail
+  globally. Missing/unapproved/invalid labels block only their target.
+- Caller attests resolved physical-fruit identities, reviews and timing.
+  The program cannot verify those claims or detect differently named aliases.
+- Output preserves input SHA and split IDs; exclusive creation forbids
+  overwriting existing results, input files or symlinks.
+
+Coordinator command:
+python3 -B -m unittest discover -s scripts -p 'test_*.py' -v
+Observed: 33 tests passed, including 12 new morphology baseline checks.
+Positive proof: actual synthetic CLI train/predict/evaluate, medians 3 locules,
+4 arils, 12 mm shell; exact MAE/RMSE/bias; test targets do not change models.
+Negative proof: overlap and post-opening declarations exit 1 without output;
+unapproved target exits 2 but retains valid shell results; no silent row loss.
+Source/result collisions and symlinks preserve existing bytes.
+
+Enforcement: local unittest gates passed. No tracked hook or CI invocation
+found, core.hooksPath unset; no hooks installed or CI run claimed. External
+branch protection/merge blocking unverified. Skill encode-invariant guided
+positive/negative proof of accepted boundaries, not new model policy.
+No actual SoilTECH dataset trained/evaluated or changed. Real reviewed labels,
+fruit-level split approval and timing evidence remain prerequisites.
+Acceptance: AWAITING_USER_REVIEW; baseline code is not prediction-accuracy PASS.
