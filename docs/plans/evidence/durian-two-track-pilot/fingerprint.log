@@ -73,3 +73,16 @@ Limits: no calibrated identity verdict, benchmark, threshold or accuracy claim.
 Recorded-ID grouping does not resolve identity across arbitrary collections.
 Batch rereads banks per query; no speculative persistent index/cache added.
 Acceptance: AWAITING_USER_REVIEW for this increment, not model PASS.
+
+2026-09-30 — Real two-stream diagnostic, awaiting user review
+Integrated visual builder fec200e and fresh RGBD consumer322584b. Source sample
+N1V10C3/session20260828-124510-e9f5, original CAM_TREN/CAM_DUOI,36frames each.
+Fresh run output/rgbd-N1V10C3-review/pack.json:1483 queryfeatures,72frames,
+29.124seconds,0 geometric inliers everywhere. Frame82/80 are earliest ties.
+Read-only agent audit:71frames fail minimum8 ratio matches; CAM_DUOI621 has9
+but no usable geometry. Precise fitting failure branch not retained. No obvious
+mask/coordinate issue; no threshold adjustment or recognition success claim.
+Previous bank run output/n1v10c3-real-demo/pack.json remains unchanged:
+top3 N2V52C3,N1V1C3,N1V12C2; selected N1V10C3 absent. Media has exact candidate
+frames and native point overlays; sources hashed, identity/confidence null.
+Local tests:33 test_video passed, plus root UI/assembly checks. Awaiting review.

@@ -104,3 +104,16 @@ positive/negative proof of accepted boundaries, not new model policy.
 No actual SoilTECH dataset trained/evaluated or changed. Real reviewed labels,
 fruit-level split approval and timing evidence remain prerequisites.
 Acceptance: AWAITING_USER_REVIEW; baseline code is not prediction-accuracy PASS.
+
+2026-09-30 — Original RGBD surface helper and real references
+Integrated helper210993a (agent77ed26d):exact depth/confidence index, uint16mm
+and 0/1/2 confidence, valid depth>0/conf>=1, existing foreground mask reused.
+7focused tests passed; sampled source layers inspected in integrated real run.
+Optional groove/spike output is an exterior heuristic, NOT internal anatomy.
+N1V10C3 selected after checking full-ID card, query, H1–H5 originals/copy hashes,
+and workbook row70 plus chamber rows362–366:5 locules,10 arils,20mm shell.
+Reference images/targets displayed separately; raw predictions remain null.
+No image predictor or accepted split exists. Labels not user-approved gold.
+Local evidence output/sample-selection/N1V10C3.json; viewer127.0.0.1:8772.
+Browser decoded card+all5 chamber photos; no references fed into either matcher.
+Root full validation81 tests passed. Awaiting user review, not model PASS.

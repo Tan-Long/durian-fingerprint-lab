@@ -125,6 +125,100 @@ test_video/.venv/bin/python -B -m unittest discover -s test_video -p 'test_*.py'
 test_video/.venv/bin/python -B -m unittest prototypes.durian_2d_projection.test_spike_graph
 ```
 
+## Duyệt Kết Quả Code Trên Máy
+
+### Mẫu Thực Hai Nguồn RGB + LiDAR: N1V10C3
+
+Demo hiện tại dùng `CAM_TREN` và `CAM_DUOI` của session
+`28082026/N1V10C3/20260828-124510-e9f5`. Mỗi camera đọc RGB, depth,
+confidence và thời gian **đúng frame**. Chỉ dùng 36 chỉ số frame/camera từ bank;
+trích SIFT mới, không dùng lại descriptor bank hoặc hợp nhất pose hai thiết bị.
+
+```sh
+test_video/.venv/bin/python -B scripts/build_rgbd_sample_review.py \
+  --image '/Volumes/SoilTECH/Ảnh chụp sầu riêng/DA_SAP_XEP_28082026/N1V10C3/004__IMG_4171.HEIC' \
+  --session-dir /Volumes/SoilTECH/DurianScan/28082026/N1V10C3/20260828-124510-e9f5 \
+  --bank-session-dir /Volumes/SoilTECH/DurianScan/28082026/processed_multiview_v1/samples/N1V10C3/20260828-124510-e9f5 \
+  --output-dir output/rgbd-N1V10C3-review
+```
+
+Kết quả thực: cả 72 frame có 0 inlier hình học. Frame hiển thị 82/80 là
+chọn theo thứ tự khi đồng hạng, **chưa khớp thành công**. Truy vấn bank riêng
+cũng không có N1V10C3 trong top 3; giữ nguyên kết quả thất bại để duyệt.
+Lớp RGB/depth/confidence/mask/rãnh/gai là dữ liệu bề mặt. Độ sâu tới camera
+không phải độ dày vỏ. Chưa có mô hình dự đoán hộc/múi bên trong.
+
+Bộ lắp ghép dùng kết quả truy vấn bank bên dưới và hồ sơ chọn mẫu đã đối soát
+cục bộ (`output/sample-selection/N1V10C3.json`, không tự tạo/đoán hồ sơ này):
+
+```sh
+python3 -B scripts/assemble_sample_demo.py \
+  --alignment-pack output/rgbd-N1V10C3-review/pack.json \
+  --retrieval-pack output/n1v10c3-real-demo/pack.json \
+  --sample-evidence output/sample-selection/N1V10C3.json \
+  --output output/n1v10c3-demo-pack-v2.json
+python3 -B scripts/serve_label_review.py \
+  --pack output/n1v10c3-demo-pack-v2.json \
+  --state-dir output/n1v10c3-review-state \
+  --media-root output/rgbd-N1V10C3-review \
+  --media-root output/n1v10c3-real-demo \
+  --media-root /Volumes/SoilTECH --port 8772
+```
+
+Mở <http://127.0.0.1:8772/>: đổi lớp dưới từng camera, bấm ảnh để zoom;
+ca thứ hai có thẻ mã và đủ H1–H5, Excel 5 hộc/10 múi/20 mm chỉ là đối chứng;
+ca thứ ba giữ kết quả tìm mã sai. Chọn trạng thái, ghi comment và lưu.
+Đọc lại bằng `curl -fsS http://127.0.0.1:8772/api/export`.
+Khởi động lại chỉ chạy server với nguyên pack/state. Tạo bộ mới phải dùng
+tên output mới; không ghi đè nguồn, pack hoặc phản hồi cũ. State phải nằm ngoài
+mọi media-root. Kiểm thử ghi phản hồi dùng cùng pack, cổng 8773 và state riêng
+`output/n1v10c3-browser-test-state`; không dùng state của người duyệt.
+
+### Demo Ảnh Thật: Ảnh Chụp Và Frame Khớp
+
+Chọn ảnh chụp độc lập có mã mẫu đã đối chiếu trước khi chạy. Lệnh chỉ đọc bank
+hiện có, trích đúng frame ứng viên và vẽ các cặp điểm khớp; không train lại:
+
+```sh
+test_video/.venv/bin/python -B scripts/build_fingerprint_visual_review.py \
+  --image /path/to/verified-independent-phone-photo.jpg \
+  --bank-root /Volumes/SoilTECH/DurianScan/27082026/processed_multiview_v1 \
+  --bank-root /Volumes/SoilTECH/DurianScan/28082026/processed_multiview_v1 \
+  --output-dir output/fingerprint-real-review
+python3 -B scripts/serve_label_review.py --pack output/fingerprint-real-review/pack.json \
+  --state-dir output/fingerprint-real-review-state \
+  --media-root output/fingerprint-real-review --port 8772
+```
+
+Thư mục output phải mới. Mở <http://127.0.0.1:8772/> để xem ảnh đầu vào, frame
+của ba ứng viên và hình nối điểm; bấm ảnh để phóng to/cuộn. Chỉ số khớp không
+phải xác suất đúng quả. Chữ/tem/nền có thể gây khớp sai. Hộc/múi/vỏ chưa có
+mô hình tạo lớp phân vùng; không hiển thị số giả lập như dự đoán trên ảnh thật.
+Phản hồi lưu ở state riêng, không ghi đè phản hồi của các trang duyệt trước.
+
+### Trang Kiểm Thử Chức Năng (Giả Lập, Không Phải Demo Nhận Diện)
+
+Trang cũ cho hai kết quả kiểm thử, không dùng/chỉnh sửa ảnh hoặc nhãn thật:
+
+```sh
+mkdir -p output/core-review
+test_video/.venv/bin/python -B scripts/build_core_review.py --output output/core-review/pack.json
+python3 -B scripts/serve_label_review.py --pack output/core-review/pack.json \
+  --state-dir output/core-review/state --media-root scripts --port 8770
+```
+
+Mở <http://127.0.0.1:8770/>. Chọn phần code, xem bảng kết quả/JSON, chọn duyệt
+hoặc cần sửa và ghi comment rồi lưu. Phản hồi nằm trong
+`output/core-review/state/decisions.sqlite3`; đọc lại qua `/api/review` hoặc xuất
+`/api/export`. Duyệt chỉ áp dụng cho phần code/snapshot đang xem, không duyệt nhãn
+hay chứng nhận độ chính xác. Khởi động lại dùng nguyên pack/state để giữ lịch sử;
+builder từ chối ghi đè pack có sẵn. Muốn tạo snapshot mới, dùng tên file mới.
+
+Trang tái dùng giao diện và server duyệt nhãn, ẩn phần ảnh trong chế độ code.
+Kiểm tra trình duyệt ảnh thật: `scripts/check_core_review_browser.js` dùng pack
+ảnh thật nhưng server cổng `8773` và state **riêng** ngoài thư mục media;
+không chạy kiểm tra ghi phản hồi trên state người dùng.
+
 ## Duyệt Nhãn Trên Máy
 
 Gắn ổ `SoilTECH`, chạy chỉ mục và đối soát ở trên trước. Tạo bộ duyệt riêng

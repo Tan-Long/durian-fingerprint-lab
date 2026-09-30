@@ -15,6 +15,7 @@
     /* Main-page wheel gestures have one vertical scroll owner. */
     html{overflow-y:scroll}aside.queue{height:auto;overflow:visible;position:static;align-self:start}.queue-list,.facts-wrap,.history{max-height:none;overflow:visible}.review{position:static}.facts-wrap{overflow-wrap:anywhere}table{table-layout:fixed}td:first-child{min-width:0}
     @media(max-width:720px){.queue-list{grid-template-columns:repeat(2,minmax(0,1fr))}.case-button .small{overflow-wrap:anywhere}.dialog-head{gap:8px}.dialog-caption{max-height:48px}.photo-controls .small{display:none}}
+    .photo.match_overlay{grid-column:1/-1}.photo.match_overlay img{height:auto;max-height:480px}.photo.query_photo{border-color:var(--green)}
   </style>
 </head>
 <body>
@@ -31,7 +32,10 @@
     <main id="main"><div id="loadState" class="panel empty" role="status">Đang kết nối dữ liệu trên máy…</div><div id="caseView" hidden>
       <div class="case-head"><div class="row between"><p id="caseTrack" class="eyebrow"></p><span id="caseStatus" class="pill"></span></div><h2 id="caseTitle"></h2><div class="row between"><p id="caseIds" class="mono muted"></p><button id="jumpPhotos" type="button">Xem ảnh đối chiếu ↓</button></div></div>
       <div class="workspace"><div class="evidence">
+        <p id="codeNotice" class="notice" hidden>Kết quả chạy trên dữ liệu giả lập để duyệt chức năng code. Không phải độ chính xác trên sầu riêng thật. Duyệt chỉ áp dụng cho phần code và snapshot hiển thị, không duyệt nhãn hay toàn bộ mô hình.</p>
+        <div id="resultTables" class="evidence" hidden></div>
         <section class="panel" aria-labelledby="findingsTitle"><div class="panel-head"><h3 id="findingsTitle">Đối chiếu trước khi duyệt</h3></div><div class="panel-body findings"><ul id="findings"></ul><div class="questions"><h3>Bạn cần xác nhận</h3><ol id="questions"></ol></div></div></section>
+        <details id="rawResultPanel" class="panel panel-body" hidden><summary>JSON kết quả chạy thực tế trên fixture giả lập</summary><pre id="rawResult"></pre></details>
         <details class="panel"><summary class="panel-head" id="factsTitle">Mở dữ liệu gốc & vị trí cần kiểm tra</summary><p class="panel-body small muted">Ô trống không phải số 0. Chưa có giá trị nào được tự sửa.</p><div class="facts-wrap"><table><thead><tr><th scope="col">Trường</th><th scope="col">Giá trị ghi nhận</th><th scope="col">Nguồn / ô</th></tr></thead><tbody id="facts"></tbody></table></div></details>
         <section class="panel" aria-labelledby="photosTitle"><div class="panel-head"><div class="row between"><h3 id="photosTitle">Bộ ảnh hộc / múi sau bổ</h3><span id="photoCount" class="mono small"></span></div><p class="small muted">Hiện toàn bộ ảnh ứng viên đã tìm được. Số ảnh không phải số hộc; chưa xác nhận đủ bộ hoặc đúng mã.</p><button id="openArchive" type="button">Tìm ảnh còn thiếu trong kho ảnh hộc</button></div><div id="gallery" class="gallery"></div><details id="otherPhotoSection" class="panel-body"><summary id="otherPhotoTitle">Ảnh ngoài vỏ / đối chiếu mã</summary><div id="otherGallery" class="gallery"></div></details></section>
         <details class="panel panel-body"><summary>Nguồn dữ liệu & giới hạn</summary><p class="small muted">Bản duyệt gắn với một ảnh chụp dữ liệu cố định. Duyệt ở đây không tự sửa Excel và không chứng nhận độ chính xác mô hình.</p><pre id="sources"></pre></details>
@@ -56,6 +60,42 @@
     const drafts=new Map();
     function el(tag,text,className){const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(className)node.className=className;return node;}
     function valueText(value){return value===null||value===undefined?'Chưa ghi nhận':typeof value==='object'?JSON.stringify(value):String(value);}
+    function renderCoreResults(item){
+      const core=data.review_kind==='core_code';
+      $('codeNotice').hidden=!core;$('resultTables').hidden=!core;$('rawResultPanel').hidden=!core;
+      const hasPhotos=!!item.media?.length,photoPanel=$('photosTitle').closest('section');
+      photoPanel.hidden=core&&!hasPhotos;$('jumpPhotos').hidden=core&&!hasPhotos;
+      $('resultTables').replaceChildren();
+      if(!core)return;
+      const real=data.sources.fixture_only===false;
+      $('codeNotice').textContent=real?'Ảnh thật và ứng viên do matcher trả về, chưa phải kết luận đúng quả. Hãy kiểm tra ảnh và các điểm nối; mã nguồn chưa duyệt, chữ/tem/nền có thể gây khớp sai. Không có phần trăm tin cậy đã hiệu chuẩn.':'Kết quả chạy trên dữ liệu giả lập để duyệt chức năng code. Không phải độ chính xác trên sầu riêng thật. Duyệt chỉ áp dụng cho phần code và snapshot hiển thị, không duyệt nhãn hay toàn bộ mô hình.';
+      if(item.raw_result?.mode==='known_sample_alignment')$('codeNotice').textContent='Đang so ảnh với frame của hai luồng RGB–LiDAR trong một mẫu đã chọn. Đây là khớp góc nhìn trong mẫu biết trước, KHÔNG phải nhận diện mã giữa toàn bộ dataset. Các lớp chỉ thể hiện dữ liệu bề mặt, không phải hộc/múi bên trong.';
+      if(item.raw_result?.mode==='known_sample_alignment'&&item.raw_result.best_per_camera?.every(row=>row.geometric_inliers===0))$('codeNotice').textContent='CHƯA KHỚP: cả hai camera có 0 cặp điểm hợp lệ. Frame đang xem được chọn theo thứ tự khi đồng hạng, chưa xác nhận khớp ảnh. '+$('codeNotice').textContent;
+      if(hasPhotos){$('resultTables').before(photoPanel);$('jumpPhotos').textContent='Xem ảnh & điểm khớp ↓';}
+      document.title='SoilTECH · Duyệt kết quả code';document.querySelector('h1').textContent='Bàn duyệt kết quả code';
+      document.querySelector('label:has(#search)').firstChild.textContent='Tìm phần code';$('search').placeholder='Vân vỏ, hộc, múi…';
+      $('decision').querySelector('[value="needs_changes"]').textContent='Cần sửa code / kết quả';
+      $('decision').querySelector('[value="approved"]').textContent='Duyệt phần code này';
+      $('comment').placeholder='Phần code nào đạt hoặc cần sửa? Ghi rõ kết quả, hành vi và yêu cầu của bạn.';
+      document.querySelector('#reviewForm .help').textContent='Ghi nhận xét cho phần code đang chọn. Duyệt không chứng nhận độ chính xác mô hình. Tối đa 4.000 ký tự.';
+      document.querySelector('#reviewForm .notice').textContent='Lưu riêng cho snapshot code này. Điều phối viên sẽ đọc lại; không thay đổi nhãn hoặc duyệt toàn bộ dự án.';
+      $('factsTitle').textContent='Snapshot code & bằng chứng kiểm thử';
+      $('factsTitle').parentElement.querySelector('p').textContent='Số test đạt chứng minh các hành vi đã kiểm tra, không phải tỷ lệ nhận diện đúng.';
+      $('caseTrack').textContent=(item.track==='fingerprint'?'Vân vỏ / Truy vấn bank':'Hộc · Múi · Độ dày vỏ')+(real?' · Chẩn đoán trên ảnh thật':' · Dữ liệu giả lập');
+      if(real&&item.track==='morphology'){$('codeNotice').textContent='Chưa có mô hình dự đoán hộc/múi/vỏ từ ảnh. Không có kết quả nhận diện thực tế để duyệt ở phần này.';$('caseTrack').textContent='Hộc · Múi · Độ dày vỏ · Chưa có kết quả từ ảnh';}
+      $('rawResultPanel').querySelector('summary').textContent=real?'JSON kết quả chạy & nguồn ảnh':'JSON kết quả chạy thực tế trên fixture giả lập';
+      $('rawResult').textContent=JSON.stringify(item.raw_result,null,2);
+      const snapshot=el('tr');snapshot.append(el('td','Snapshot code'),el('td',item.git_snapshot||data.sources.git_snapshot),el('td','Git + SHA-256 nguồn trong phần giới hạn'));$('facts').prepend(snapshot);
+      const proof=data.sources.prior_regression_evidence;if(proof){const checks=el('tr');checks.append(el('td','Kiểm thử đã xác nhận'),el('td',`${proof.passed_tests} test đạt tại ${proof.git_snapshot}`),el('td','Không chạy lại số test này khi tạo trang'));$('facts').append(checks);}
+      for(const result of item.result_tables||[]){
+        const section=el('section',undefined,'panel'),head=el('div',undefined,'panel-head'),wrap=el('div',undefined,'facts-wrap');
+        head.append(el('h3',result.title));const table=el('table'),thead=el('thead'),titles=el('tr'),body=el('tbody');
+        table.setAttribute('aria-label',result.title);
+        for(const title of result.columns){const th=el('th',title);th.scope='col';titles.append(th);}thead.append(titles);
+        for(const values of result.rows){const row=el('tr');for(const value of values){const labels={locule_count:'Số hộc',aril_count:'Số múi',shell_thickness_mm:'Dày vỏ (mm)'};const text=typeof value==='number'?value.toLocaleString('vi-VN',{maximumSignificantDigits:4}):labels[value]||valueText(value);const cell=el('td',text);cell.title=valueText(value);row.append(cell);}body.append(row);}
+        table.append(thead,body);wrap.append(table);section.append(head,wrap);$('resultTables').append(section);
+      }
+    }
     function state(id){const current=data.current[id];return current?.decision||((current||data.history.some(event=>event.case_id===id))?'comment':'pending');}
     function active(){return data.cases.find(item=>item.id===selected);}
     function visibleCases(){const search=$('search').value.trim().toLocaleLowerCase('vi');return data.cases.filter(item=>(!search||[item.title,...item.sample_ids].join(' ').toLocaleLowerCase('vi').includes(search))&&($('filter').value==='all'||state(item.id)===$('filter').value));}
@@ -81,20 +121,34 @@
     function fitPhoto(){photoScale=1;resizePhoto();$('photoViewport').scrollTo(0,0);}
     function showPhoto(media){photoSequence=active().media.filter(item=>(item.kind==='chamber_photo')===(media.kind==='chamber_photo'));photoIndex=photoSequence.findIndex(item=>item.id===media.id);$('photoPosition').textContent=`${photoIndex+1} / ${photoSequence.length}`;$('previousPhoto').disabled=photoIndex===0;$('nextPhoto').disabled=photoIndex===photoSequence.length-1;$('largeError').hidden=true;$('photoTitle').textContent=media.label;$('largePhoto').src=imageURL(media,true);$('largePhoto').alt=media.label;$('fullPhoto').href=imageURL(media,true);$('photoCaption').textContent=`${media.link_status||'Chưa xác nhận liên kết'} · ${media.source_path}`;if(!$('photoDialog').open)$('photoDialog').showModal();fitPhoto();}
     function appendPhotos(){
-      const media=active().media||[],chamber=media.filter(photo=>photo.kind==='chamber_photo');
+      const media=active().media||[],chamber=media.filter(photo=>photo.kind==='chamber_photo'),core=data.review_kind==='core_code';
       $('photosTitle').textContent=selected==='chamber-archive'?'Kho toàn bộ ảnh trong bảng kê hộc':'Bộ ảnh hộc / múi ứng viên';
       $('photoCount').textContent=`${chamber.length} ảnh trong bảng kê hộc`;$('otherPhotoTitle').textContent=`Ảnh ngoài vỏ / đối chiếu mã (${media.length-chamber.length} ảnh)`;$('otherPhotoSection').hidden=media.length===chamber.length;$('otherPhotoSection').open=chamber.length===0;
       $('openArchive').hidden=selected==='chamber-archive'||!data.cases.some(item=>item.id==='chamber-archive');
-      if(!chamber.length)$('gallery').append(el('p','Chưa tìm được ảnh hộc sau bổ cho ca này. Không đủ bằng chứng ảnh để chốt tổng hộc/múi; hãy mở kho ảnh hộc hoặc giữ trạng thái chưa rõ.','notice'));
-      for(const photo of media){
+      if(core){$('photosTitle').textContent='Ảnh truy vấn → ảnh ứng viên → điểm khớp';$('photoCount').textContent=`${media.length} ảnh / hình đối chiếu`;$('photosTitle').closest('.panel-head').querySelector('p').textContent='Bấm ảnh để phóng to. Các đường nối biểu diễn khớp hình học của thuật toán, không chứng minh hai ảnh là cùng một quả.';$('otherPhotoSection').hidden=true;$('openArchive').hidden=true;}
+      if(core&&media.some(item=>item.layer_group)){$('photosTitle').textContent='Ảnh chụp ↔ hai camera RGB–LiDAR';$('photosTitle').closest('.panel-head').querySelector('p').textContent='Chọn lớp dưới từng frame: RGB, độ sâu, confidence, vùng vỏ và đặc trưng bề mặt. Chưa có lớp dự đoán hộc/múi bên trong. Bấm ảnh để phóng to.';}
+      if(core&&active().track==='morphology'){$('photosTitle').textContent='Thẻ mã và ảnh sau bổ — chỉ để đối chứng';$('photosTitle').closest('.panel-head').querySelector('p').textContent='Các ảnh này KHÔNG được dùng làm đầu vào dự đoán từ quả nguyên. Số đo Excel nằm riêng trong bảng đối chứng bên dưới.';}
+      if(!core&&!chamber.length)$('gallery').append(el('p','Chưa tìm được ảnh hộc sau bổ cho ca này. Không đủ bằng chứng ảnh để chốt tổng hộc/múi; hãy mở kho ảnh hộc hoặc giữ trạng thái chưa rõ.','notice'));
+      for(const photo of media.filter(item=>!item.layer_group||item.layer==='rgb')){
         const figure=el('figure',undefined,'photo'),button=el('button'),img=el('img');let failed=false;
+        let displayed=photo;
+        if(core&&['query_photo','reference_frame','match_overlay'].includes(photo.kind))figure.classList.add(photo.kind);
         button.type='button';button.setAttribute('aria-label',`Phóng lớn ${photo.label}`);
         img.src=imageURL(photo);img.alt=photo.label;img.loading='lazy';img.width=400;img.height=300;
         img.addEventListener('error',()=>{failed=true;button.replaceChildren(el('span','Ảnh xem trước chưa tải được. Bấm để thử lại; nếu vẫn lỗi, báo điều phối viên.','image-error'));});
-        button.append(img);button.addEventListener('click',()=>{if(failed){failed=false;button.replaceChildren(img);img.src=imageURL(photo);}else showPhoto(photo);});
-        const caption=el('figcaption');caption.append(el('strong',photo.label),el('span',({random_photo:'Ảnh chụp tự do',chamber_photo:'Ảnh từ bảng kê hộc — cần kiểm tra nội dung',rig_preview:'Ảnh ghép từ video'}[photo.kind]||photo.kind),'source'),el('span',photo.link_status||'Chưa xác nhận liên kết','source'));
+        button.append(img);button.addEventListener('click',()=>{if(failed){failed=false;button.replaceChildren(img);img.src=imageURL(displayed);}else showPhoto(displayed);});
+        const caption=el('figcaption');caption.append(el('strong',photo.label),el('span',({rgbd_layer:'Dữ liệu RGB–LiDAR cùng frame',identity_photo:'Ảnh thẻ mã — đối chứng nguồn',query_photo:'Ảnh đầu vào thật',reference_frame:'Khung hình thật từ video đăng ký',match_overlay:'Hình phân tích các điểm khớp — không phải ảnh AI',random_photo:'Ảnh chụp tự do',chamber_photo:'Ảnh từ bảng kê hộc — cần kiểm tra nội dung',rig_preview:'Ảnh ghép từ video'}[photo.kind]||photo.kind),'source'),el('span',photo.link_status||'Chưa xác nhận liên kết','source'));
         if(photo.locule_hint)caption.append(el('span',`Gợi ý chưa duyệt: ${photo.locule_hint}`,'source'));
-        const details=el('details');details.append(el('summary','Đường dẫn nguồn'),el('span',photo.source_path,'mono small'));caption.append(details);figure.append(button,caption);$(photo.kind==='chamber_photo'?'gallery':'otherGallery').append(figure);
+        if(photo.layer_group){
+          const label=el('label','Lớp dữ liệu: '),select=el('select');select.setAttribute('aria-label',`Lớp dữ liệu ${photo.layer_group}`);
+          const layers=media.filter(item=>item.layer_group===photo.layer_group);
+          for(const layer of layers){const option=el('option',layer.layer_label||layer.label);option.value=layer.id;option.selected=layer.id===photo.id;select.append(option);}
+          select.addEventListener('change',()=>{displayed=layers.find(item=>item.id===select.value);failed=false;button.replaceChildren(img);img.src=imageURL(displayed);img.alt=displayed.label;button.setAttribute('aria-label',`Phóng lớn ${displayed.label}`);caption.querySelector('strong').textContent=displayed.label;caption.querySelector('details span').textContent=displayed.source_path;});
+          label.append(select);caption.prepend(label);
+          const range=photo.provenance?.mask_stats?.depth_display_range_mm;
+          caption.append(el('span',`Độ sâu tới camera${range?': thang màu '+range.join('–')+' mm':''}, không phải độ dày vỏ. Confidence: đỏ 0 / vàng 1 / xanh 2. Mask xanh là foreground thô; rãnh/gai là đặc trưng bề mặt thử nghiệm.`, 'source'));
+        }
+        const details=el('details');details.append(el('summary','Đường dẫn nguồn'),el('span',photo.source_path,'mono small'));caption.append(details);figure.append(button,caption);$(core||photo.kind==='chamber_photo'?'gallery':'otherGallery').append(figure);
       }
     }
     function selectCase(id){
@@ -108,8 +162,9 @@
       $('facts').replaceChildren();for(const fact of item.facts){const row=el('tr'),source=String(fact.source||'');const cell=el('td',source.includes('#')?source.split('/').pop():source.split('/').slice(-2).join('/'));cell.title=source;row.append(el('td',fact.label),el('td',valueText(fact.value)),cell);$('facts').append(row);}
       const draft=drafts.get(id);$('decision').value=draft?.decision||'comment';$('comment').value=draft?.comment||'';
       $('saveState').textContent='';$('saveState').className='review-status';$('draftState').textContent=draft?'Bản nháp chưa lưu — chỉ lưu khi bấm nút.':'Chưa có thay đổi.';
-      $('gallery').replaceChildren();$('otherGallery').replaceChildren();appendPhotos();
+      $('gallery').replaceChildren();$('otherGallery').replaceChildren();renderCoreResults(item);if(data.review_kind!=='core_code'||item.media?.length)appendPhotos();
       $('snapshot').textContent=`Bản dữ liệu: ${data.pack_id.slice(0,12)} · Phản hồi lưu trên máy`;
+      if(data.review_kind==='core_code')$('snapshot').textContent+=` · Code: ${(item.git_snapshot||data.sources.git_snapshot).slice(0,7)}`;
       $('sources').textContent=JSON.stringify(data.sources,null,2);
       const index=data.cases.findIndex(entry=>entry.id===selected);$('previousCase').disabled=index===0;$('nextCase').disabled=index===data.cases.length-1;
       renderStatus();

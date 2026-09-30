@@ -218,6 +218,52 @@ organization work; retain their artifacts and deferred per-photo API branch.
   flows are exercised with synthetic fixtures. Separate project logs and
   `tests.log` record proof. Status: **AWAITING_USER_REVIEW**, not accuracy PASS.
 
+### Core-Code Results Review Surface
+
+User requested showing the delivered results for review. Reuse the existing
+loopback review server and append-only feedback, with a separate core-code
+pack/state (not the photo pack). Display actual synthetic fixture outputs,
+held-out truth/predictions, geometric ranking, source snapshot and limits.
+No additional real-image processing, model training or inferred approval.
+Keep the SoilTECH green/neutral, border-based interface and document scrolling;
+tables precede technical details, and each track has its own decision/comment.
+Coordinator owns the additive core mode and browser proof; fingerprint agent
+owns the minimal reproducible fixture pack builder/test. No new backend or
+frontend framework. Test feedback uses isolated state, never user decisions.
+
+User rejected the synthetic-only surface as insufficient for recognition review:
+they explicitly need accompanying images. Follow-up: run one real phone-photo
+diagnostic against existing banks (no accuracy benchmark), show the query,
+exact selected reference video frames and geometric-correspondence overlays
+for three distinct recorded-ID candidates. Decode only selected video prefixes,
+keep source banks/media read-only and derived evidence under ignored output.
+Do not assert the unverified query-folder ID is truth or that top rank is a
+correct identity. Expose writing/tag/background leakage and uncalibrated status.
+Morphology remains clearly pending an image predictor; replace synthetic result
+numbers with that gap in the real-evidence pack. Preserve previous packs/state.
+
+Further user clarification: predict hidden locule/aril counts from INTACT-fruit
+inputs; opened-fruit photos and workbook are reference targets only. Selected
+real demo N1V10C3 has independent labelled phone photos, five visibly labelled
+H1–H5 photos, workbook totals5/10/20mm and both READY camera streams. Selection
+is source-crosschecked, not user-approved gold truth; optional fields remain
+missing. Current bank retrieval fails this example (top1 N2V52C3, selected ID
+absent fromtop3), which must remain visible and not be rewritten as success.
+
+User explicitly directs using original CAM_TREN/CAM_DUOI RGB + LiDAR sources
+under DurianScan. Read selected session sync.json/README_AGENT and repository
+StrayScanner format: frame-aligned depth in mm, confidence0/1/2, cadence from
+frame_transforms timestamp_unix, flash-relative alignment, independent cameras;
+no ARKit cross-camera fusion. Bounded next slice uses fresh source-frame RGB
+features inside depth/confidence foreground masks and compares the independent
+photo to36 sampledframes per camera of this KNOWN sample. Cached banks provide
+sampling frame indexes only, not descriptors. This alignment demo is separate
+from database identity retrieval and does not fix its measured failure by fiat.
+Expose source RGB/depth/confidence/foreground layers per camera with selectors,
+exact frame/timing/provenance and point correspondences. These are exterior
+observations, never internal locule/mui segmentations. No hidden-count model or
+accepted accuracy exists; keep missing predictions explicit.
+
 ## Risks And Recovery
 
 - Most prototype code was untracked at the start. Publish the source baseline
@@ -263,6 +309,37 @@ organization work; retain their artifacts and deferred per-photo API branch.
 ## Result
 
 In progress. No benchmark accuracy or production readiness has been established.
+
+### Two-original-stream real demo — 2026-09-30
+
+- Root integrated fingerprint visual builder `fec200e`, RGBD helper `210993a`
+  and fresh-feature consumer `322584b`; agents worked on separate code surfaces.
+- Real selected source: N1V10C3 / 20260828-124510-e9f5. Both original cameras
+  supply RGB + exact-frame depth/confidence. Source-correlated card and H1–H5
+  evidence exists locally; identity and Excel targets remain user-unapproved.
+- Actual fresh run: 72 frames, 1483 query features, 29.124 s; ALL 72 have zero
+  geometric inliers. 71 have fewer than 8 ratio matches; remaining frame621
+  has 9 but geometry fails (branch not retained). No threshold tuning.
+  Displayed CAM_TREN82/CAM_DUOI80 are earliest zero-score ties, not successful
+  matches. No obvious empty-mask or image-coordinate bug found in agent review.
+- Prior real bank retrieval remains visible: N2V52C3, N1V1C3, N1V12C2 top3;
+  selected ID absent. Known-sample alignment does not replace dataset retrieval.
+- Viewer serves `output/n1v10c3-demo-pack-v2.json` on 127.0.0.1:8772,
+  pack SHA256 `ec1d42d2244c023c52854e261453507073d11eff5f5bc201f96c8f408bbbaedd`.
+  State `output/n1v10c3-review-state`; old photo-review/synthetic state preserved.
+  12 RGBD selectable layers; full card and five opened references; failed
+  retrieval's exact frames/overlays. Zero-match warning above photos.
+- Root reused the existing local review server/UI (no dependencies), separated
+  Excel reference values from absent predictions, and added assembly checks.
+- Validation: scripts34 + test_video33 + projection14 = 81 passing tests.
+  Browser isolated8773: 12 layers,6 reference photos,7 retrieval images decoded;
+  zoom scroll, document scroll, mobile width, save/reload, comment preserving
+  decision passed, zero page errors. Initial fixed-delay scroll assertion raced
+  modal closure; replaced with actual hidden/scroll waits, no UI scroll change.
+- Missing: successful cross-photo fingerprint match, hidden-count image model,
+  approved fruit-level evaluation split and accepted labels. No model PASS.
+  Next: inspect frame621 geometry failure and cross-view feature robustness;
+  build image-based morphology only with reviewed supervision/evaluation scope.
 
 ### First Increment Evidence
 
