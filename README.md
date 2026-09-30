@@ -128,3 +128,36 @@ công cụ Playwright `browser_run_code_unsafe` với `filename` là đường d
 đối. Check dùng context riêng, không gửi phản hồi; bộ mẫu hiện tại cần kho
 427 ảnh. Kiểm thử ghi phản hồi phải dùng state/port riêng, không dùng state
 duyệt thật. Dừng máy chủ bằng Ctrl-C; ảnh nguồn không bị thay đổi.
+
+### Sắp xếp ảnh hộc theo nhãn quả
+
+`scripts/organize_chamber_photos.py` tạo bản sao theo mã đọc trực tiếp trên ảnh,
+không di chuyển ảnh gốc hoặc dùng mã gần nhất từ OCR cũ. Bước chuẩn bị cần máy
+chủ duyệt ở cổng 8765 với toàn bộ ảnh hộc và ImageMagick trên macOS:
+
+```sh
+python3 -B -m scripts.organize_chamber_photos prepare \
+  --source '/Volumes/SoilTECH/Ảnh chụp sầu riêng/Chụp Hộc' \
+  --output output/chamber-sort-review
+```
+
+Kiểm tra ảnh/nhãn trong các bảng ảnh; ghi kết quả riêng cho **từng ảnh** dưới
+dạng JSON `{đường_dẫn_tương_đối: {fruit_id, locule, status, note}}`.
+`status` là `visual_read`, `unclear` hoặc `not_labelled`. Không rõ mã thì
+`fruit_id: null`; không lấy mã từ ảnh bên cạnh. BONUS phải giữ riêng.
+Sau khi tất cả ảnh có kết quả đọc, sao chép tới một thư mục **chưa tồn tại**:
+
+```sh
+python3 -B -m scripts.organize_chamber_photos copy \
+  --inventory output/chamber-sort-review/inventory.json \
+  --reviews output/chamber-sort-review/root.json \
+    output/chamber-sort-review/morphology.json output/chamber-sort-review/fingerprint.json \
+  --destination '/Volumes/SoilTECH/Ảnh chụp sầu riêng/Hoc_theo_nhan_qua_20260930'
+```
+
+Bộ mới giữ cấu trúc `mã_quả/máy_chụp/tên_file_gốc`, cùng nhóm chưa rõ/không có
+nhãn và bảng `DOI_CHIEU_ANH.csv/json`. SHA-256 được đối chiếu trước/sau sao chép;
+không ghi đè thư mục cũ. Nếu lỗi giữa chừng, giữ bộ dở để kiểm tra và dùng đích
+mới khi chạy lại. Đây là phân nhóm theo nhãn nhìn thấy, **chưa phải người dùng
+duyệt nhãn hay xác nhận số hộc/múi**. Kiểm thử:
+`python3 -B -m unittest scripts.test_organize_chamber_photos -v`.

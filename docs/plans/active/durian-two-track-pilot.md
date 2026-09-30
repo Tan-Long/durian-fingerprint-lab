@@ -151,6 +151,27 @@ They explicitly selected "Duyệt trên máy này trước" (local-machine revie
   user review of increment 2; full project PASS remains user-owned. Evidence:
   `docs/plans/evidence/durian-two-track-pilot/label-review.md`.
 
+### Current User Priority: Re-sort Chamber Photos by Visible Fruit Labels
+
+- User asked to recheck all images in the three original camera directories
+  under `Chụp Hộc` and organize by fruit label. Preserve originals and create
+  a new grouped copy outside that source root. Do not trust old nearest-match
+  OCR, infer identity from sequence, or treat organization as label approval.
+- Root reviews IP12/IP17; morphology reviews Máy Đăng indices 0–179;
+  fingerprint reviews indices 180–360 (lexicographic filenames). Each image
+  receives a direct visual reading or an explicit unclear/no-label status.
+- Inventory and per-photo review artifacts stay local. Copy must account for
+  every original, retain camera/filename provenance and verify SHA-256.
+- Per-photo review UI follow-up is deferred while this priority is active.
+  Backend work is safely committed on `agent/photo-review-server` at
+  `7f6035e`; not integrated or deployed, no official review-state changes.
+- Completed the requested non-destructive organization: 427/427 verified
+  copies, 396 images under 84 fruit codes, 11 unclear and 20 unlabelled.
+  Original media, workbook and manifests unchanged; 45 local tests passed.
+  Destination is the source root's sibling `Hoc_theo_nhan_qua_20260930`.
+  Details: `docs/plans/evidence/durian-two-track-pilot/chamber-sort.md`.
+  User label acceptance is still pending; the web review pack remains unchanged.
+
 ## Risks And Recovery
 
 - Most prototype code was untracked at the start. Publish the source baseline
