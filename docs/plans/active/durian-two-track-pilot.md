@@ -341,6 +341,28 @@ In progress. No benchmark accuracy or production readiness has been established.
   Next: inspect frame621 geometry failure and cross-view feature robustness;
   build image-based morphology only with reviewed supervision/evaluation scope.
 
+### Shell-number localization/OCR trial — 2026-09-30
+
+- Authority: user asks code to recognize the existing numbers on the shell;
+  do not ask the user to annotate locations already visible in source images.
+- Added `scripts/detect_shell_numbers.py`: blue-ink proposals within a coarse
+  green-body hull, local Apple Vision OCR on RGB/binary crops at four rotations.
+  Reused source hashing, read-only image loader, exclusive output and review
+  pack structure. No dependencies, agents, model downloads or source writes.
+- Real run on original IMG_4171.HEIC plus both previously extracted RGB frames:
+  `output/shell-numbers-N1V10C3-v3/pack.json`. Proposal counts 10/6/12;
+  zero unambiguous literal digits read. Main inspection sees marks including
+  3/4/5 in proposed boxes, alongside false proposals. This is PARTIAL localization,
+  NOT successful number recognition, locule segmentation or a locule count.
+- Earlier trials retained under output; v1 included blue background, v2 split
+  faded digit strokes. Final bounds improve localization but OCR remains failed.
+- Focused test covers blue proposal geometry, background rejection, no-ink case,
+  exact digit parsing and no repair of S/I/fruit IDs into numeric labels.
+- Reproduce (use a new output name):
+  `test_video/.venv/bin/python -B scripts/detect_shell_numbers.py --image IMAGE --output-dir output/NEW_NAME`.
+  Proof: `test_video/.venv/bin/python -B -m unittest test_video.test_shell_numbers -v`.
+  Next bottleneck is isolated handwritten-digit recognition, not more review UI.
+
 ### First Increment Evidence
 
 - Published baseline `bfa3925` to `origin/agent/add-durian-2d-projection`;
