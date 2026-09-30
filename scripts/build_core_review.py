@@ -82,15 +82,15 @@ def build_pack():
                     {"title": "Xếp hạng mã giả", "columns": ["Hạng", "Mã ghi nhận", "Inliers tốt nhất", "Dòng bằng chứng (index)"],
                      "rows": [[row["rank"], row["sample_id"], row["best_candidate"]["geometric_inliers"],
                                ", ".join(map(str, row["supporting_candidate_indexes"]))] for row in fingerprint["fruit_ranking"]]},
-                    {"title": "Bằng chứng từng bộ mã hóa", "columns": ["Index", "Encoder", "Mã", "Phiên", "Camera", "Inliers", "Inliers không tối", "Sai số epipolar (px)"],
-                     "rows": [[index, Path(row["bank_root"]).name, row["sample_id"], row["session_id"], row["camera"],
+                    {"title": "Bằng chứng từng bộ mã hóa", "columns": ["Encoder [index]", "Camera / Phiên", "Inliers", "Không tối", "Sai số (px)"],
+                     "rows": [[f"{Path(row['bank_root']).name} [{index}]", f"{row['camera']} / {row['session_id']}",
                                row["geometric_inliers"], row["non_dark_inliers"], row["median_epipolar_error_px"]]
                               for index, row in enumerate(fingerprint["candidates"])]},
                 ],
                 "raw_result": fingerprint,
             },
             {
-                "id": "morphology-core", "title": "Hình thái: baseline trung vị trên dữ liệu tổng hợp",
+                "id": "morphology-core", "title": "Hộc · Múi · Vỏ: baseline trung vị trên dữ liệu tổng hợp",
                 "track": "morphology", "priority": "review",
                 "sample_ids": [row["fruit_id"] for row in data["fruits"]],
                 "findings": [
