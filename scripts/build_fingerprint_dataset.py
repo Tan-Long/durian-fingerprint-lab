@@ -104,7 +104,7 @@ def discover_queries(root: Path) -> tuple[list[dict[str, str]], set[str]]:
     return records, fruit_ids
 
 
-def discover_enrollments(root: Path, fruit_ids: set[str]) -> tuple[list[dict[str, str]], dict[str, set[str]]]:
+def discover_enrollments(root: Path) -> tuple[list[dict[str, str]], dict[str, set[str]]]:
     records = []
     cameras_by_session: dict[str, set[str]] = defaultdict(set)
     for date_root in sorted(root.iterdir(), key=lambda path: path.name):
@@ -112,7 +112,7 @@ def discover_enrollments(root: Path, fruit_ids: set[str]) -> tuple[list[dict[str
             continue
         for fruit_root in sorted(date_root.iterdir(), key=lambda path: path.name):
             match = ENROLLMENT_DIR.fullmatch(fruit_root.name)
-            if not match or match.group(1) not in fruit_ids or not fruit_root.is_dir():
+            if not match or not fruit_root.is_dir():
                 continue
             fruit_id = match.group(1)
             for path in sorted(fruit_root.glob("*/CAM_*/rgb.mp4")):
@@ -179,22 +179,33 @@ def build_dataset(
     enrollment_root = enrollment_root.resolve(strict=True)
     query_root = query_root.resolve(strict=True)
     output = prepare_output(output, (enrollment_root, query_root))
-    query_records, fruit_ids = discover_queries(query_root)
-    splits = split_fruits(fruit_ids, calibration_fruits)
-    enrollment_records, cameras_by_session = discover_enrollments(enrollment_root, fruit_ids)
+    query_records, query_fruits = discover_queries(query_root)
+    enrollment_records, cameras_by_session = discover_enrollments(enrollment_root)
     enrolled_fruits = {row["fruit_id"] for row in enrollment_records}
-    missing_enrollment = sorted(fruit_ids - enrolled_fruits)
+    positive_fruits = query_fruits & enrolled_fruits
+    query_only_fruits = query_fruits - enrolled_fruits
+    enrollment_only_fruits = enrolled_fruits - query_fruits
+    splits = split_fruits(positive_fruits, calibration_fruits)
     complete_fruits = {
         key.split("/", 1)[0] for key, cameras in cameras_by_session.items() if cameras == CAMERAS
     }
-    missing_complete_session = sorted(fruit_ids - complete_fruits)
+    missing_complete_session = sorted(positive_fruits - complete_fruits)
+    enrollment_only_without_complete_session = sorted(enrollment_only_fruits - complete_fruits)
 
     records = enrollment_records + query_records
     for record in records:
         source = Path(record["source_path"])
         record["asset_id"] = asset_id(record["role"], source)
         record["label_provenance"] = label_provenance
-        record["split"] = "enrollment" if record["role"] == "enrollment" else splits[record["fruit_id"]]
+        if record["role"] == "enrollment":
+            record["split"] = "enrollment"
+            if record["fruit_id"] in enrollment_only_fruits:
+                record["notes"] = ";".join(filter(None, (record["notes"], "candidate_only_no_query")))
+        elif record["fruit_id"] in query_only_fruits:
+            record["split"] = "open_set_dev"
+            record["label_status"] = "unregistered"
+        else:
+            record["split"] = splits[record["fruit_id"]]
         extension = source.suffix.lower()
         record["raw_path"] = str(Path("raw") / record["role"] / record["fruit_id"]
                                  / record["capture_session_id"] / record["camera_id"]
@@ -217,23 +228,30 @@ def build_dataset(
         writer.writerows(records)
 
     counts = Counter(row["role"] for row in records)
-    split_counts = Counter(splits.values())
+    query_split_by_fruit = {**splits, **{fruit: "open_set_dev" for fruit in query_only_fruits}}
+    split_counts = Counter(query_split_by_fruit.values())
+    all_fruits = query_fruits | enrolled_fruits
     summary = {
         "schema_version": 1,
         "enrollment_root": str(enrollment_root),
         "query_root": str(query_root),
-        "fruit_count": len(fruit_ids),
+        "fruit_count": len(all_fruits),
+        "positive_fruit_count": len(positive_fruits),
+        "enrollment_fruit_count": len(enrolled_fruits),
+        "query_fruit_count": len(query_fruits),
         "asset_count": len(records),
         "assets_by_role": dict(sorted(counts.items())),
         "query_fruits_by_split": dict(sorted(split_counts.items())),
         "split_seed": SPLIT_SEED,
         "calibration_fruits": sorted(fruit for fruit, split in splits.items() if split == "calibration"),
         "dev_fruits": sorted(fruit for fruit, split in splits.items() if split == "dev"),
-        "missing_enrollment": missing_enrollment,
+        "enrollment_only_fruits": sorted(enrollment_only_fruits),
+        "query_only_fruits": sorted(query_only_fruits),
         "missing_complete_two_camera_session": missing_complete_session,
+        "enrollment_only_without_complete_two_camera_session": enrollment_only_without_complete_session,
         "duplicate_content_same_fruit": duplicate_content,
         "manifest_sha256": sha256(manifest),
-        "benchmark_ready": not missing_enrollment and not missing_complete_session,
+        "benchmark_ready": not missing_complete_session,
         "limits": [
             "Current query photos are dev/calibration only, never blind 30-day evidence.",
             "Query capture timestamps remain unknown unless independently sourced.",

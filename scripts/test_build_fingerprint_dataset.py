@@ -12,7 +12,7 @@ class FingerprintDatasetTests(unittest.TestCase):
             root = Path(temporary)
             enrollment, query = root / "enrollment", root / "query"
             originals = {}
-            for fruit in ("N1V1C1-MOC", "N2V1C1"):
+            for fruit in ("N1V1C1-MOC", "N2V1C1", "N3V1C1"):
                 for camera in ("CAM_TREN", "CAM_DUOI"):
                     path = enrollment / "27082026" / fruit / "20260827-120000-abcd" / camera / "rgb.mp4"
                     path.parent.mkdir(parents=True, exist_ok=True)
@@ -22,6 +22,7 @@ class FingerprintDatasetTests(unittest.TestCase):
                 "N1V1C1": ("a.HEIC", "b.JPG"),
                 "N1V1C1_LAN_2": ("c.HEIC",),
                 "N2V1C1": ("d.HEIC",),
+                "N4V1C1": ("e.HEIC",),
             }.items():
                 for name in names:
                     path = query / folder / name
@@ -32,15 +33,25 @@ class FingerprintDatasetTests(unittest.TestCase):
             output = root / "output"
             summary = build_dataset(enrollment, query, output, calibration_fruits=1)
             self.assertTrue(summary["benchmark_ready"])
-            self.assertEqual(summary["fruit_count"], 2)
-            self.assertEqual(summary["assets_by_role"], {"enrollment": 4, "query": 4})
-            self.assertEqual(summary["query_fruits_by_split"], {"calibration": 1, "dev": 1})
+            self.assertEqual(summary["fruit_count"], 4)
+            self.assertEqual(summary["positive_fruit_count"], 2)
+            self.assertEqual(summary["enrollment_only_fruits"], ["N3V1C1"])
+            self.assertEqual(summary["query_only_fruits"], ["N4V1C1"])
+            self.assertEqual(summary["assets_by_role"], {"enrollment": 6, "query": 5})
+            self.assertEqual(summary["query_fruits_by_split"],
+                             {"calibration": 1, "dev": 1, "open_set_dev": 1})
             self.assertEqual(summary["manifest_sha256"], sha256(output / "manifest.csv"))
             with (output / "manifest.csv").open() as handle:
                 rows = list(csv.DictReader(handle))
             self.assertEqual(len({row["asset_id"] for row in rows}), len(rows))
             n1_splits = {row["split"] for row in rows if row["fruit_id"] == "N1V1C1" and row["role"] == "query"}
             self.assertEqual(len(n1_splits), 1)
+            distractors = [row for row in rows if row["fruit_id"] == "N3V1C1"]
+            self.assertTrue(all(row["split"] == "enrollment" and "candidate_only_no_query" in row["notes"]
+                                for row in distractors))
+            unknown = [row for row in rows if row["fruit_id"] == "N4V1C1"]
+            self.assertTrue(all(row["split"] == "open_set_dev" and row["label_status"] == "unregistered"
+                                for row in unknown))
             for row in rows:
                 link = output / row["raw_path"]
                 self.assertTrue(link.is_symlink())

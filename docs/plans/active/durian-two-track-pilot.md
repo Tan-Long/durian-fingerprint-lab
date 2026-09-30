@@ -312,16 +312,21 @@ In progress. No benchmark accuracy or production readiness has been established.
 
 ### Canonical fingerprint dataset — 2026-09-30
 
-- User-confirmed query folders were indexed read-only with matching enrollment
-  videos into `output/fingerprint-dataset-v1`; SoilTECH sources were unchanged.
-- The snapshot contains 1,228 assets for 62 physical fruit IDs: 154 enrollment
-  videos and 1,074 query photos. Every fruit has at least one complete
-  `CAM_TREN` + `CAM_DUOI` enrollment session.
+- User-confirmed query folders and all available enrollment videos were indexed
+  read-only into
+  `/Volumes/SoilTECH/DurianFingerprintDataset/fingerprint-dataset-v2`; SoilTECH
+  source directories were unchanged. The earlier intersection-only v1 remains
+  at `output/fingerprint-dataset-v1` for recovery.
+- V2 contains 1,286 assets for 86 physical fruit IDs: 212 enrollment videos and
+  1,074 query photos. There are 62 positive fruits with both modalities and 24
+  enrollment-only fruits retained as candidate distractors. All 86 have at
+  least one complete `CAM_TREN` + `CAM_DUOI` enrollment session; there are no
+  confirmed query-only fruits.
 - Query identities are deterministically locked to 50 development and 12
   calibration fruits. Current photos are not blind or 30-day evidence.
-- `manifest.csv` SHA-256 is
-  `ba38a7d8f8f45220e6a4bc4a12c9788727dbeb83c3111111910e76bdb1c57b4d`.
-  All 1,228 raw entries are symlinks, none are broken, and no identical content
+- V2 `manifest.csv` SHA-256 is
+  `270e99dc0f6b6936f17ebe94b2668c730be1a09e56ab4712a22a3edfb8ae8be2`.
+  All 1,286 raw entries are symlinks, none are broken, and no identical content
   is assigned across different fruit IDs.
 - Rebuild with `scripts/build_fingerprint_dataset.py`; two focused tests cover
   traceable symlinks, session-level splits, source preservation, safe reruns and
