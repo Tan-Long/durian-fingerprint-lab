@@ -1,0 +1,61 @@
+2026-09-30 — Morphology increment 1
+Plan: docs/plans/active/durian-two-track-pilot.md
+Agent: /root/morphology
+Worktree: .worktrees/morphology
+Branch: agent/morphology-pilot
+Agent commits: e5ef16ebd69345f2f0165f3ff0a739556428c33c, fd84801e26d4e3c3c0cbea9f0356537b905087d5
+Integrated commits: 0dab7ce, 14d28d4
+Acceptance: AWAITING_USER_REVIEW (automated checks do not grant project PASS)
+
+Delivered:
+- scripts/audit_morphology.py reads the workbook and optional samples CSV.
+- Original and cached cell values, sheet/row/cell locations, and source hashes
+  are preserved in audit.json. No formulas are evaluated or labels repaired.
+- Crosswalk matches exact group/garden/tree components only; sample_status
+  preserves the source status and status describes the mapping result.
+- Each target is checked separately. Missing values stay null; invalid locule
+  details do not automatically invalidate an otherwise valid shell measurement.
+- Output inside source directories and output file symlinks are rejected.
+
+Coordinator verification:
+Command: python3 -B -m unittest discover -s scripts -p 'test_*.py' -v
+Observed: 8 tests OK, including 6 morphology tests and 2 shared-index tests.
+Full final transcript: tests.log in this evidence directory.
+Command: python3 -B scripts/audit_morphology.py '/Volumes/SoilTECH/Ảnh chụp sầu riêng/Chụp Hộc/SAMPLE_Fruit_morphology.xlsx' --samples /Volumes/SoilTECH/DurianData/collections/202608_RIG_V1/manifests/samples.csv --output output/morphology
+Observed: exit 0; artifacts output/morphology/audit.json and sample_crosswalk.csv.
+
+Real workbook result:
+- 123 fruit records; 563 nonempty detail rows, 562 with Fruit-ID and one missing.
+- 562 numeric valid locule numbers in all rows, 561 in rows with Fruit-ID.
+- Check-valid targets: 111 locule counts, 107 aril counts, 119 shell thicknesses,
+  36 empty-locule counts. These are not human-approved training labels.
+- 86/88 collection IDs matched. N2V52C3 and N1V4C1_BONUS remain unmatched.
+- Missing Fruit-ID: A653, sheet Thông tin từng hộc.
+- Wrong type in locule-number field: B442.
+- Duplicate locule H3: rows 682–683 for TAN-N2-V17-C3-F.
+- 12 fruit/detail locule-count conflicts; 4 aril-sum conflicts.
+
+Coordinator coverage calculation:
+Joined audit crosswalk (status=matched) to audit fruits by exact fruit_id and
+output/data-index/media.csv by sample_uid; counted each mapped sample once.
+Required target.status=valid and destination_exists=YES for media coverage.
+Of 88 August collection IDs:
+- Locule target: 77 pass label checks; 76 have video; 64 have video with inherited
+  dataset_eligible=YES; 65 have random-photo entries.
+- Aril target: 77 pass label checks; 76 have video; 64 have source-eligible video;
+  65 have random-photo entries. Target subsets need not be identical.
+- Shell target: 83 pass label checks; 82 have video; 67 have source-eligible video;
+  69 have random-photo entries.
+- Empty-locule target: zero matched August records have a valid value.
+Committed summary with source hashes: morphology-summary.json.
+
+Coordinator review:
+Inspected the complete script/tests; requested source-output protection,
+source status preservation, source hashes and precise detail-row counts before
+integration. Re-ran tests and real-data audit in the coordinator checkout.
+
+User check:
+Inspect conflict cell locations, unmatched IDs and target-specific coverage.
+No inferred correction, training split or prediction model is included.
+Legacy OCR H1–H5 handling is still deferred until a reviewed per-fruit list exists.
+User acceptance remains pending.

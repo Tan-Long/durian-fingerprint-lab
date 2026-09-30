@@ -1,0 +1,60 @@
+2026-09-30 — Coordinator verification of integrated first increment
+All commands ran from /Users/jin/durian-fingerprint-lab.
+33 tests passed in total. This is technical verification; user acceptance is pending.
+
+$ python3 -B -m unittest discover -s scripts -p 'test_*.py' -v
+exit_code=0
+test_exact_crosswalk_no_bonus_repair_and_duplicate_identity (test_audit_morphology.AuditMorphologyTests.test_exact_crosswalk_no_bonus_repair_and_duplicate_identity) ... ok
+test_formula_without_cache_not_evaluated_and_wrong_schema_fails (test_audit_morphology.AuditMorphologyTests.test_formula_without_cache_not_evaluated_and_wrong_schema_fails) ... ok
+test_malformed_and_duplicate_keys_have_cell_provenance (test_audit_morphology.AuditMorphologyTests.test_malformed_and_duplicate_keys_have_cell_provenance) ... ok
+test_missing_does_not_become_zero_or_invalidate_shell (test_audit_morphology.AuditMorphologyTests.test_missing_does_not_become_zero_or_invalidate_shell) ... ok
+test_output_guard_keeps_source_directories_and_symlink_targets_read_only (test_audit_morphology.AuditMorphologyTests.test_output_guard_keeps_source_directories_and_symlink_targets_read_only) ... ok
+test_valid_variable_count_zero_and_source_preserved (test_audit_morphology.AuditMorphologyTests.test_valid_variable_count_zero_and_source_preserved) ... ok
+test_indexes_media_preserves_review_and_leaves_sources_unchanged (test_build_dataset_index.DatasetIndexTest.test_indexes_media_preserves_review_and_leaves_sources_unchanged) ... ok
+test_rejects_output_inside_source_collection (test_build_dataset_index.DatasetIndexTest.test_rejects_output_inside_source_collection) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.224s
+
+OK
+
+$ test_video/.venv/bin/python -B -m unittest discover -s test_video -p 'test_*.py' -v
+exit_code=0
+test_uses_flash_relative_time_and_camera_azimuth (test_batch_multiview_ingest.AnglePairingTest.test_uses_flash_relative_time_and_camera_azimuth) ... ok
+test_falls_back_to_flash_on_and_ignores_camera_startup (test_batch_multiview_ingest.FlashDetectionTest.test_falls_back_to_flash_on_and_ignores_camera_startup) ... ok
+test_uses_the_sharp_light_off_edge (test_batch_multiview_ingest.FlashDetectionTest.test_uses_the_sharp_light_off_edge) ... ok
+test_ignores_flash_spike_and_splits_two_continuous_turns (test_batch_multiview_ingest.RevolutionDetectionTest.test_ignores_flash_spike_and_splits_two_continuous_turns) ... ok
+test_finds_texture_repeat_period (test_batch_multiview_ingest.RevolutionPeriodTest.test_finds_texture_repeat_period) ... ok
+test_updates_one_session_without_losing_the_queue (test_batch_multiview_ingest.StatusLedgerTest.test_updates_one_session_without_losing_the_queue) ... ok
+test_writes_search_ready_results_from_manifests (test_batch_multiview_ingest.StatusLedgerTest.test_writes_search_ready_results_from_manifests) ... ok
+test_builds_an_offline_viewer_with_relative_contact_sheets (test_build_groundtruth_viewer.GroundtruthViewerTest.test_builds_an_offline_viewer_with_relative_contact_sheets) ... ok
+test_geometric_evidence_and_empty_or_sparse_inputs (test_query_multiview_banks.QueryBanksTest.test_geometric_evidence_and_empty_or_sparse_inputs) ... ok
+test_rejects_corrupt_schema_instead_of_reinterpreting_descriptors (test_query_multiview_banks.QueryBanksTest.test_rejects_corrupt_schema_instead_of_reinterpreting_descriptors) ... ok
+test_uses_each_encoder_and_keeps_recorded_ids_and_ready_filter (test_query_multiview_banks.QueryBanksTest.test_uses_each_encoder_and_keeps_recorded_ids_and_ready_filter) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.054s
+
+OK
+
+$ test_video/.venv/bin/python -B -m unittest prototypes.durian_2d_projection.test_spike_graph -v
+exit_code=0
+test_binary_edge_projects_to_registered_phase (prototypes.durian_2d_projection.test_spike_graph.SpikeGraphTest.test_binary_edge_projects_to_registered_phase) ... ok
+test_blended_atlas_averages_overlapping_frames (prototypes.durian_2d_projection.test_spike_graph.SpikeGraphTest.test_blended_atlas_averages_overlapping_frames) ... ok
+test_canonical_tip_projects_back_to_its_mesh_longitude (prototypes.durian_2d_projection.test_spike_graph.SpikeGraphTest.test_canonical_tip_projects_back_to_its_mesh_longitude) ... ok
+test_consensus_band_reduces_to_a_connected_centerline (prototypes.durian_2d_projection.test_spike_graph.SpikeGraphTest.test_consensus_band_reduces_to_a_connected_centerline) ... ok
+test_dynamic_seam_follows_low_cost_path (prototypes.durian_2d_projection.test_spike_graph.SpikeGraphTest.test_dynamic_seam_follows_low_cost_path) ... ok
+test_extracts_tip_and_base_for_each_surface_spike (prototypes.durian_2d_projection.test_spike_graph.SpikeGraphTest.test_extracts_tip_and_base_for_each_surface_spike) ... ok
+test_front_band_atlas_keeps_a_two_dimensional_patch (prototypes.durian_2d_projection.test_spike_graph.SpikeGraphTest.test_front_band_atlas_keeps_a_two_dimensional_patch) ... ok
+test_full_surface_is_not_cut_down_by_partial_mesh_filter (prototypes.durian_2d_projection.test_spike_graph.SpikeGraphTest.test_full_surface_is_not_cut_down_by_partial_mesh_filter) ... ok
+test_image_rectification_keeps_front_pattern_order (prototypes.durian_2d_projection.test_spike_graph.SpikeGraphTest.test_image_rectification_keeps_front_pattern_order) ... ok
+test_registration_replaces_opposite_direction_outlier (prototypes.durian_2d_projection.test_spike_graph.SpikeGraphTest.test_registration_replaces_opposite_direction_outlier) ... ok
+test_rgb_detector_uses_visible_apex_instead_of_cell_center (prototypes.durian_2d_projection.test_spike_graph.SpikeGraphTest.test_rgb_detector_uses_visible_apex_instead_of_cell_center) ... ok
+test_rgb_grooves_define_four_spike_feet (prototypes.durian_2d_projection.test_spike_graph.SpikeGraphTest.test_rgb_grooves_define_four_spike_feet) ... ok
+test_video_map_connects_a_one_pixel_gap_between_grooves (prototypes.durian_2d_projection.test_spike_graph.SpikeGraphTest.test_video_map_connects_a_one_pixel_gap_between_grooves) ... ok
+test_video_observations_merge_across_map_seam_and_keep_best (prototypes.durian_2d_projection.test_spike_graph.SpikeGraphTest.test_video_observations_merge_across_map_seam_and_keep_best) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.046s
+
+OK

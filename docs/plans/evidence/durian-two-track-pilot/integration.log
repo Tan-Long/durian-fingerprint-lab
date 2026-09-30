@@ -1,0 +1,50 @@
+2026-09-30 — Shared baseline and data index
+Plan: docs/plans/active/durian-two-track-pilot.md
+Owner: coordinator
+GitHub: https://github.com/Tan-Long/durian-fingerprint-lab
+Publication branch: agent/add-durian-2d-projection
+Project acceptance: pending user review
+
+Observed runtime dependencies:
+System python3: openpyxl 3.1.5.
+test_video/.venv: numpy 2.4.4, scipy 1.17.1, opencv-python-headless 5.0.0.93.
+ImageMagick: 7.1.2-18 with HEIC delegate.
+These record the tested machine, not new dependency version requirements.
+
+Source baseline:
+Commit: bfa3925b533795467455795e7fb8d1d01add85f2
+Push: origin/agent/add-durian-2d-projection
+Observed remote SHA: bfa3925b533795467455795e7fb8d1d01add85f2
+Existing modified/untracked source and documents were committed.
+Raw media, generated results, temporary files and environments remain local.
+Baseline checks: 8 ingest/viewer tests and 14 projection/spike tests, all OK.
+Baseline whitespace check reported pre-existing whitespace in saved notes and
+templates; these were preserved in the source snapshot.
+
+Shared index:
+Commit: 87fdda6
+Command: python3 -B -m unittest discover -s scripts -p 'test_build_dataset_index.py' -v
+Observed: 2 tests ran, all OK, exit 0.
+Checks: media selection and provenance, missing files, unresolved identities,
+preservation of REVIEW flags, source bytes unchanged, source output rejected.
+Command: python3 -B scripts/build_dataset_index.py /Volumes/SoilTECH/DurianData/collections/202608_RIG_V1 --output output/data-index
+Observed: exit 0; 88 sample records; 325,311 file-manifest records.
+Selected media: 3,146 files = 210 RGB videos + 2,509 random photos + 427 chamber photos.
+Missing selected paths: 0.
+Unresolved sample links: 1,343 = 1,058 random photos + 285 chamber photos.
+Sample inventory coverage: 87 with video, 72 with random photos, 62 with chamber photos.
+Source samples.csv SHA-256: c9eed8c0454cb93d5ed3301f97649dbd2e2a8660685774f43360bc6d601dfcc9
+Source files.csv SHA-256: 9f2e181b50af96b2095b17cf49329f809b79d671199642d218ed21072e4a6d45
+Artifacts: output/data-index/samples.csv, media.csv, summary.json.
+
+Cross-review by /root/fingerprint:
+No publication-blocking issue found. Links use exact collection/sample IDs;
+unknown IDs stay unresolved; sources are read/hashed only; output inside the
+collection and output-file symlinks are rejected.
+Counts are inventory counts, including missing paths if any; they are not
+counts of reviewed independent images or valid training examples.
+
+User acceptance rule:
+Technical verification, publication and user acceptance are separate.
+The coordinator prepares reviewed results; the user checks before project PASS.
+No CI execution, merge blocking, main-branch merge, or model accuracy is claimed.

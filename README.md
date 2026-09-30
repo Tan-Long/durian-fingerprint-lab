@@ -45,3 +45,39 @@ Chạy kiểm tra chỉ mục với Python chuẩn:
 ```sh
 python3 -B -m unittest discover -s scripts -p 'test_build_dataset_index.py'
 ```
+
+Đối soát nhãn Excel (cần `openpyxl` trong môi trường Python đang dùng):
+
+```sh
+python3 scripts/audit_morphology.py \
+  "/Volumes/SoilTECH/Ảnh chụp sầu riêng/Chụp Hộc/SAMPLE_Fruit_morphology.xlsx" \
+  --samples /Volumes/SoilTECH/DurianData/collections/202608_RIG_V1/manifests/samples.csv \
+  --output output/morphology
+```
+
+`audit.json` giữ giá trị gốc, vị trí ô Excel và lỗi đối soát. Bảng
+`sample_crosswalk.csv` nối mã collection với mã Excel khi khớp rõ ràng;
+`valid` chỉ có nghĩa là qua các kiểm tra nhãn hiện có, chưa phải người duyệt.
+
+Thử truy vấn ảnh với bank hai ngày quét (cần các thư viện trong
+`test_video/requirements.txt` và ImageMagick; máy phát triển có môi trường
+`test_video/.venv`):
+
+```sh
+test_video/.venv/bin/python test_video/query_multiview_banks.py \
+  --image /path/to/phone-photo.jpg \
+  --bank-root /Volumes/SoilTECH/DurianScan/27082026/processed_multiview_v1 \
+  --bank-root /Volumes/SoilTECH/DurianScan/28082026/processed_multiview_v1
+```
+
+Lệnh trả JSON ra stdout, dùng bộ mã hóa riêng của từng bank root và chỉ xét
+phiên `READY`. Điểm khớp là bằng chứng thử nghiệm chưa hiệu chuẩn; kết quả
+`identity_verdict` vẫn là `null`. Chữ viết, tem và nền có thể ảnh hưởng matcher.
+
+Kiểm tra các công cụ dữ liệu và matcher:
+
+```sh
+python3 -B -m unittest discover -s scripts -p 'test_*.py'
+test_video/.venv/bin/python -B -m unittest discover -s test_video -p 'test_*.py'
+test_video/.venv/bin/python -B -m unittest prototypes.durian_2d_projection.test_spike_graph
+```

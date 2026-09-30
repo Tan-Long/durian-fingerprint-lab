@@ -1,0 +1,41 @@
+2026-09-30 — Fingerprint increment 1
+Plan: docs/plans/active/durian-two-track-pilot.md
+Agent: /root/fingerprint
+Worktree: .worktrees/fingerprint
+Branch: agent/fingerprint-pilot
+Agent commit: 6c6371004f84d62f060d74b1a58ea0c7205af78e
+Integrated commit: 8b6ff5d
+Acceptance: AWAITING_USER_REVIEW (automated checks do not grant project PASS)
+
+Delivered:
+- Shared matcher handles empty and one-reference descriptor inputs.
+- Homography overlay requires sufficient selected points.
+- query_multiview_banks.py reads READY banks and shortlists separately for
+  each root's vocabulary/PCA. Bank arrays are checked before use.
+- Recorded sample/session/camera IDs are retained; identity_verdict is null.
+
+Coordinator verification:
+Command: test_video/.venv/bin/python -B -m unittest discover -s test_video -p 'test_*.py' -v
+Observed: 11 tests ran, all OK, exit 0.
+Coverage: existing ingest/viewer behavior; sparse and valid geometry;
+different encoders; READY filter; malformed bank arrays.
+
+Agent real-data smoke (reported and artifact available for inspection):
+Command: /Users/jin/durian-fingerprint-lab/test_video/.venv/bin/python -B test_video/query_multiview_banks.py --image /Volumes/SoilTECH/DurianData/collections/202608_RIG_V1/staging/unverified/random_photos/by_sample_unverified/N1V11C1/IMG20260827114814.jpg --bank-root /Volumes/SoilTECH/DurianScan/27082026/processed_multiview_v1 --bank-root /Volumes/SoilTECH/DurianScan/28082026/processed_multiview_v1 --top-k 3
+Artifact: .worktrees/fingerprint/output/fingerprint/query-smoke.json
+Committed copy: docs/plans/evidence/durian-two-track-pilot/fingerprint-smoke.json
+Observed: 82 READY sessions; 164 banks; 5,904 views; two REVIEW sessions excluded.
+Elapsed for this run: 5.62 seconds. Query features: 1,522.
+Evidence: six shortlisted views, 7–10 geometric inliers, 0–1 non-dark inliers.
+
+Coordinator review:
+- Inspected matcher diff, full query CLI and its tests before integration.
+- Inspected query image: handwriting on shell and a label on the stem.
+- Read the saved JSON and confirmed counts, elapsed time and evidence ranges.
+- Source bank reads do not mutate data; no video decoding or fitting performed.
+- No calibrated acceptance threshold or verified identity result is available.
+
+User check:
+- Inspect CLI output and limits before accepting this tooling increment.
+- This run is not evidence of natural fingerprint identification accuracy.
+- User acceptance and independent recognition benchmark remain pending.

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Audit morphology labels without editing sources (requires openpyxl).
 
-Example: python3 scripts/audit_morphology.py SAMPLE_Fruit_morphology.xlsx \
+Example: python3 scripts/audit_morphology.py /path/to/source/SAMPLE_Fruit_morphology.xlsx \
     --samples /path/to/manifests/samples.csv --output output/morphology
 
 Writes audit.json (original/cached cells, per-target checks, issues and crosswalk)

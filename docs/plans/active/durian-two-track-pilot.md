@@ -7,6 +7,10 @@ Date: 2026-09-30
 Active. The user authorized publishing the existing code to GitHub and then
 implementing the agreed plan incrementally with two sub-agents.
 
+User acceptance is pending. On 2026-09-30 the user required project-specific
+logs, committed evidence, coordinator review, and their own check before PASS.
+Passing automated checks does not grant project acceptance.
+
 ## Outcome
 
 Produce reproducible, independently evaluated pilots for (1) identifying a
@@ -27,7 +31,8 @@ accuracy claim.
 - Labels: `SAMPLE_Fruit_morphology.xlsx` inside the SoilTECH chamber-photo
   directory (`Ảnh chụp sầu riêng/Chụp Hộc`; on-disk Unicode is decomposed).
 - Audit observed 88 collection IDs, 84 processed sessions (82 READY), and
-  123 morphology records with 562 locule rows. These are inventory counts,
+  123 morphology records with 563 nonempty locule rows (562 have Fruit-ID).
+  These are inventory counts,
   not counts of verified independent training examples.
 
 ## Scope And Ownership
@@ -64,6 +69,46 @@ accuracy claim.
    development data only. Product acceptance thresholds remain undecided.
 7. Extend the existing viewer after useful evaluation evidence exists.
 
+## Coordination And Acceptance
+
+Use this one repository plan as the shared Harness record. Keep task evidence
+in `docs/plans/evidence/durian-two-track-pilot/`; do not introduce a separate
+task database or orchestration lifecycle.
+
+| Track | Agent | Implementation | Coordinator review | User acceptance |
+| --- | --- | --- | --- | --- |
+| Fingerprint | `/root/fingerprint` | First increment integrated at `8b6ff5d` | Unit tests passed; real-data smoke is diagnostic only | Pending |
+| Morphology | `/root/morphology` | First increment integrated at `0dab7ce`, `14d28d4` | Six audit tests passed; real workbook audit reproduced | Pending |
+| Shared data | Coordinator | Inventory committed at `87fdda6` | Two tests passed; cross-review found no blocking issue | Pending |
+
+- Agents report files, commit SHA, exact check commands, observed results,
+  artifacts, and unresolved risks to the coordinator.
+- Each project has its own evidence log: `fingerprint.log` and `morphology.log`.
+  Shared checks and publication evidence go in `integration.log`.
+- After review and publication, the first increment is **AWAITING_USER_REVIEW**.
+  Only explicit user acceptance changes the corresponding reviewed increment
+  to **PASS**. Record the accepted commit and scope here.
+- A rejection or new request stays in this plan as follow-up work. Full pilot
+  completion additionally requires the outstanding evaluation milestones;
+  accepting the first increment does not accept recognition accuracy.
+- Commit each bounded increment and evidence before handoff; verify the remote
+  branch SHA after pushing. No force-push, automatic main merge, or dataset edit.
+
+### First Increment Review Package
+
+- [Fingerprint log](../evidence/durian-two-track-pilot/fingerprint.log)
+  and [query evidence](../evidence/durian-two-track-pilot/fingerprint-smoke.json).
+- [Morphology log](../evidence/durian-two-track-pilot/morphology.log)
+  and [coverage summary](../evidence/durian-two-track-pilot/morphology-summary.json).
+- [Integration log](../evidence/durian-two-track-pilot/integration.log)
+  and [33-test transcript](../evidence/durian-two-track-pilot/tests.log).
+- User review scope: source traceability, diagnostic query behavior, workbook
+  issue reporting, and safe output handling. Recognition accuracy and morphology
+  prediction have not yet been evaluated.
+- Current acceptance: **AWAITING_USER_REVIEW** for both first increments.
+  No user PASS has been recorded. Wait for that review before advancing these
+  increments to the next agreed stage.
+
 ## Risks And Recovery
 
 - Most prototype code was untracked at the start. Publish the source baseline
@@ -87,9 +132,10 @@ accuracy claim.
 - [x] Baseline validation: 8 ingest/viewer tests and 14 spike/projection tests pass.
 - [x] Publish source baseline to GitHub and verify remote commit (`bfa3925`).
 - [x] Start fingerprint and morphology agents in separate worktrees.
-- [ ] Produce shared media index and workbook audit without modifying sources.
-- [ ] Integrate and validate first fingerprint and morphology increments.
+- [x] Produce shared media index and workbook audit without modifying sources.
+- [x] Integrate and validate first fingerprint and morphology increments.
 - [ ] Publish validated increment to GitHub.
+- [ ] User checks and accepts the first increment of each project.
 - [ ] Review label issues and freeze evaluation groups.
 - [ ] Run independent fingerprint and morphology benchmarks.
 - [ ] Integrate evidence viewer and record final limits.
@@ -127,3 +173,12 @@ In progress. No benchmark accuracy or production readiness has been established.
 - A visually inspected phone image `N1V11C1/IMG20260827114814.jpg` contains
   handwritten numbers on the shell and a stem label. It may test the query
   plumbing but cannot establish natural fingerprint accuracy.
+- Morphology audit reproduced 123 fruit records and 563 nonempty detail rows;
+  one detail row lacks Fruit-ID (`A653`). Exact crosswalk matches 86/88 IDs.
+- Workbook-wide labels passing current checks: 111 locule counts, 107 aril
+  counts, 119 shell thicknesses, 36 empty-locule counts. In the August crosswalk,
+  these counts are 77, 77, 83 and zero, respectively. They are not approved labels.
+- Final integrated validation: 8 data-tool tests, 11 ingest/viewer/matcher tests,
+  and 14 projection/spike tests passed (33 total). Logs retain evidence and limits.
+- Both agents returned their reviewed first increments. Full project PASS and
+  model evaluation remain pending the user's review and later milestones.
