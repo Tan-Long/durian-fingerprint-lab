@@ -310,6 +310,26 @@ accepted accuracy exists; keep missing predictions explicit.
 
 In progress. No benchmark accuracy or production readiness has been established.
 
+### Canonical fingerprint dataset — 2026-09-30
+
+- User-confirmed query folders were indexed read-only with matching enrollment
+  videos into `output/fingerprint-dataset-v1`; SoilTECH sources were unchanged.
+- The snapshot contains 1,228 assets for 62 physical fruit IDs: 154 enrollment
+  videos and 1,074 query photos. Every fruit has at least one complete
+  `CAM_TREN` + `CAM_DUOI` enrollment session.
+- Query identities are deterministically locked to 50 development and 12
+  calibration fruits. Current photos are not blind or 30-day evidence.
+- `manifest.csv` SHA-256 is
+  `ba38a7d8f8f45220e6a4bc4a12c9788727dbeb83c3111111910e76bdb1c57b4d`.
+  All 1,228 raw entries are symlinks, none are broken, and no identical content
+  is assigned across different fruit IDs.
+- Rebuild with `scripts/build_fingerprint_dataset.py`; two focused tests cover
+  traceable symlinks, session-level splits, source preservation, safe reruns and
+  cross-fruit checksum conflicts. The existing dataset-index tests also pass.
+- Query capture timestamps remain unknown. Symlinks require the SoilTECH volume
+  at its recorded mount path. Final 30-day PASS still requires the separate
+  sealed 80-known + 20-unknown cohort.
+
 ### Two-original-stream real demo — 2026-09-30
 
 - Root integrated fingerprint visual builder `fec200e`, RGBD helper `210993a`
