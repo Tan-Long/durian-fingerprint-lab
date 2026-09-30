@@ -8,6 +8,8 @@ Writes audit.json (original/cached cells, per-target checks, issues and crosswal
 and sample_crosswalk.csv. 'valid' means passes these label checks, not reviewed
 ground truth or training-ready. Formula values use Excel's saved cache; this
 tool neither evaluates formulas nor repairs labels. Missing values remain null.
+Crosswalk 'status' is the mapping result; 'sample_status' preserves CSV status.
+Output must be outside source directories and may not overwrite symlink targets.
 """
 
 from __future__ import annotations
