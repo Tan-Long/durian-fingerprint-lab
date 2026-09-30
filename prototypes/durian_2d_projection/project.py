@@ -31,6 +31,7 @@ ATLAS_WIDTH = 1440
 ATLAS_HEIGHT = 512
 SURFACE_STEP = 2
 MAX_VIEW_ANGLE = np.deg2rad(24)
+MIN_TEXTURE_MOTION_DEGREES = 60
 
 
 @dataclass(frozen=True)
@@ -56,29 +57,97 @@ def fold(value: str) -> str:
     ).lower()
 
 
+def sample_key(value: str) -> tuple[str, int, int]:
+    match = re.fullmatch(r"([A-Z]+)(\d+)(?:C(\d+))?", value.upper())
+    return (match.group(1), int(match.group(2)), int(match.group(3) or 0)) if match else (value, 0, 0)
+
+
 def discover(root: Path) -> list[Video]:
     records: list[tuple[str, str, str, Path, str]] = []
-    for archive in sorted(root.glob("durian-*.zip")):
+    archives = [root] if root.is_file() else [
+        path
+        for path in root.rglob("*.zip")
+        if not any(part.startswith((".", "$")) for part in path.relative_to(root).parts)
+    ]
+    for archive in sorted(archives):
+        name = archive.name.lower()
+        if "iphone" in name or ("lidar" in name and "rename" not in name):
+            continue
         with zipfile.ZipFile(archive) as bundle:
             for info in bundle.infolist():
                 member = normalized(info.filename)
-                if not member.lower().endswith(".mov"):
+                if Path(member).name.startswith("._"):
                     continue
-                fruit_match = re.search(r"Q(\d+)", member, re.IGNORECASE)
+                fruit_match = re.search(r"\b(Q\d+|V\d+C\d+)\b", member, re.IGNORECASE)
                 if not fruit_match:
                     continue
-                fruit = f"Q{int(fruit_match.group(1))}"
+                fruit = fruit_match.group(1).upper()
                 plain = fold(member)
-                orientation = "ngang" if "/ngang/" in plain else "dung"
-                if "(tren" in plain:
-                    view = "tren"
-                elif "(duoi" in plain:
-                    view = "duoi"
+                if member.lower().endswith(".mov"):
+                    orientation = "ngang" if "/ngang/" in plain else "dung"
+                    if "(tren" in plain:
+                        view = "tren"
+                    elif "(duoi" in plain:
+                        view = "duoi"
+                    else:
+                        view = "unknown"
+                elif member.lower().endswith("/rgb.mp4"):
+                    orientation = "ngang" if " ngang" in plain else "dung"
+                    date = "21" if "21jul" in name else "18"
+                    background = "-trang" if "trang" in plain else "-den" if "den" in plain else ""
+                    view = f"lidar-{date}{background}"
                 else:
-                    view = "unknown"
+                    continue
                 records.append((fruit, orientation, view, archive, info.filename))
 
+    workbook = root / "RENAME.xlsx" if root.is_dir() else None
+    if workbook and workbook.is_file():
+        try:
+            from openpyxl import load_workbook
+        except ImportError as error:
+            raise RuntimeError("RENAME.xlsx requires openpyxl") from error
+
+        sheets = {
+            "IP11.20.7.Whitefont": ("Video-iphone11-20Jul2026.zip", "iphone11-20-trang"),
+            "IP11.20.7.Blackfont": ("Video-iphone11-20Jul2026.zip", "iphone11-20-den"),
+            "IP11.18.7": ("Video-iphone11-18Jul2026.zip", "iphone11-18"),
+            "IP12.20.7.Blackfont": ("Video-iphone12-20Jul2026.zip", "iphone12-20-den"),
+            "IP12.20.7.whitefont": ("Video-iphone12-20Jul2026.zip", "iphone12-20-trang"),
+            "IP12.18.7": ("Video-iphone12-18Jul2026.zip", "iphone12-18"),
+        }
+        mapped: dict[tuple[Path, str], set[tuple[str, str, str]]] = {}
+        book = load_workbook(workbook, read_only=True, data_only=True)
+        for sheet in book.worksheets:
+            config = sheets.get(sheet.title.strip())
+            if not config:
+                continue
+            archive, view = root / config[0], config[1]
+            if not archive.is_file():
+                continue
+            with zipfile.ZipFile(archive) as bundle:
+                members = {
+                    Path(info.filename).name.upper(): info.filename
+                    for info in bundle.infolist()
+                    if not Path(info.filename).name.startswith("._")
+                }
+            for row in sheet.iter_rows(min_row=2, values_only=True):
+                image, sample, direction = row[1:3] + row[5:6]
+                match = re.fullmatch(r"V\d+C\d+", str(sample).upper()) if sample else None
+                if not image or not match or fold(str(direction)) not in {"dung", "ngang"}:
+                    continue
+                member = members.get(f"IMG_{int(image):04d}.MOV")
+                if member:
+                    mapped.setdefault((archive, member), set()).add(
+                        (match.group().upper(), fold(str(direction)), view)
+                    )
+        for (archive, member), labels in mapped.items():
+            if len(labels) == 1:  # Ambiguous spreadsheet rows are unsafe to guess.
+                fruit, orientation, view = labels.pop()
+                records.append((fruit, orientation, view, archive, member))
+
     for fruit in {record[0] for record in records}:
+        if not fruit.startswith("Q"):
+            continue
         for orientation in ("ngang", "dung"):
             indices = [
                 index
@@ -101,7 +170,7 @@ def discover(root: Path) -> list[Video]:
     for fruit, orientation, view, archive, member in sorted(
         records,
         key=lambda item: (
-            int(item[0][1:]),
+            sample_key(item[0]),
             item[1] != "ngang",
             item[2],
             item[3].name,
@@ -434,7 +503,7 @@ def write_png(image: np.ndarray, path: Path) -> None:
     )
 
 
-def process(video: Video, output: Path) -> dict:
+def process(video: Video, output: Path, min_motion: float = MIN_TEXTURE_MOTION_DEGREES) -> dict:
     video_output = output / video.fruit
     video_output.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="durian-2d-") as temporary:
@@ -453,7 +522,13 @@ def process(video: Video, output: Path) -> dict:
     if len(valid) < SAMPLES // 2:
         raise RuntimeError(f"fruit mask failed on {len(frames) - len(valid)}/{len(frames)} frames")
 
-    phases = frame_phases(valid)
+    measured_phases = frame_phases(valid)
+    motion = float(abs(np.rad2deg(measured_phases[-1])))
+    if motion < min_motion:
+        raise RuntimeError(f"only {motion:.1f}° texture motion; need {min_motion:.0f}°")
+    # ponytail: captures are one constant-speed turn; use encoder phases if that protocol changes.
+    direction = np.sign(measured_phases[-1])
+    phases = np.linspace(0, direction * 2 * np.pi, len(valid), endpoint=False)
     atlas = spherical_atlas(valid, phases)
     atlas_path = video_output / f"{video.slug}-atlas.png"
     edges_path = video_output / f"{video.slug}-edges.png"
@@ -479,7 +554,7 @@ def process(video: Video, output: Path) -> dict:
         "decoded_frames": len(decoded),
         "active_frames": len(frames),
         "valid_masks": len(valid),
-        "measured_rotation_degrees": round(float(abs(np.rad2deg(phases[-1]))), 1),
+        "texture_motion_degrees": round(motion, 1),
         "median_fruit_width": median_width,
         "median_fruit_height": median_height,
         "atlas": atlas_path.relative_to(output).as_posix(),
@@ -489,7 +564,7 @@ def process(video: Video, output: Path) -> dict:
 
 
 def write_report(output: Path, rows: list[dict]) -> None:
-    rows.sort(key=lambda row: (int(row["fruit"][1:]), row["orientation"], row["view"], row["slug"]))
+    rows.sort(key=lambda row: (sample_key(row["fruit"]), row["orientation"], row["view"], row["slug"]))
     fields = list(rows[0]) if rows else []
     with (output / "manifest.csv").open("w", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(file, fieldnames=fields)
@@ -497,7 +572,7 @@ def write_report(output: Path, rows: list[dict]) -> None:
         writer.writerows(rows)
 
     sections = []
-    fruits = sorted({row["fruit"] for row in rows}, key=lambda value: int(value[1:]))
+    fruits = sorted({row["fruit"] for row in rows}, key=sample_key)
     for fruit in fruits:
         cards = []
         for row in [item for item in rows if item["fruit"] == fruit]:
@@ -508,7 +583,7 @@ def write_report(output: Path, rows: list[dict]) -> None:
                   <h3>{label}</h3>
                   <p>{row['valid_masks']}/{row['active_frames']} active masks
                     ({row['decoded_frames']} sampled) · {row['duration_seconds']}s ·
-                    {row['measured_rotation_degrees']}° measured ·
+                    {row['texture_motion_degrees']}° texture motion ·
                     ROI {row['median_fruit_width']}×{row['median_fruit_height']}</p>
                   <img src="{html.escape(row['atlas'])}" alt="Spherical UV atlas">
                   <img src="{html.escape(row['edges'])}" alt="edge fingerprint">
@@ -539,8 +614,12 @@ article{{background:#1d1d1d;padding:14px;border-radius:10px}}img{{width:100%;bac
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("fruits", nargs="*", help="Optional fruit IDs, for example Q11 Q16")
+    parser.add_argument("--source", type=Path, default=ROOT, help="Directory containing ZIP archives")
     parser.add_argument("--output", type=Path, default=OUTPUT)
     parser.add_argument("--jobs", type=int, default=2)
+    parser.add_argument("--capture", action="append", help="Exact capture label; repeat to select several")
+    parser.add_argument("--min-motion", type=float, default=MIN_TEXTURE_MOTION_DEGREES)
+    parser.add_argument("--list", action="store_true", help="List discovered videos without processing")
     parser.add_argument("--self-check", action="store_true")
     args = parser.parse_args()
 
@@ -553,22 +632,33 @@ def main() -> None:
         atlas = spherical_atlas([(frame, mask)] * 12, phases)
         assert atlas.shape == (ATLAS_HEIGHT, ATLAS_WIDTH, 3)
         assert np.count_nonzero(atlas) > atlas.size * 0.3
+        assert sample_key("V12C3") < sample_key("V13C1")
         print("OK: spherical UV projection")
+        return
+
+    wanted = {fruit.upper() for fruit in args.fruits}
+    videos = [video for video in discover(args.source) if not wanted or video.fruit in wanted]
+    if args.capture:
+        videos = [video for video in videos if video.view in args.capture]
+    if args.list:
+        for video in videos:
+            print(f"{video.fruit}\t{video.orientation}\t{video.view}\t{video.archive.name}\t{video.member}")
+        print(f"{len(videos)} videos · {len({video.fruit for video in videos})} samples")
         return
 
     missing = [tool for tool in ("ffmpeg", "ffprobe") if not shutil.which(tool)]
     if missing:
         raise SystemExit(f"Missing required tools: {', '.join(missing)}")
 
-    wanted = {fruit.upper() for fruit in args.fruits}
-    videos = [video for video in discover(ROOT) if not wanted or video.fruit in wanted]
     if not videos:
-        raise SystemExit("No matching MOV files found in durian ZIP archives")
+        raise SystemExit("No matching videos found in ZIP archives")
 
     args.output.mkdir(parents=True, exist_ok=True)
     rows = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, args.jobs)) as executor:
-        pending = {executor.submit(process, video, args.output): video for video in videos}
+        pending = {
+            executor.submit(process, video, args.output, args.min_motion): video for video in videos
+        }
         for index, future in enumerate(concurrent.futures.as_completed(pending), 1):
             video = pending[future]
             try:

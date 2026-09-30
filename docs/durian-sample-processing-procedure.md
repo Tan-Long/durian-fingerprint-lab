@@ -11,7 +11,8 @@ Mỗi quả sau khi xử lý phải có đủ:
 - ảnh phụ cuống/đáy/4 mặt nếu tiện,
 - cân nặng cả quả,
 - grade thương mại nếu có,
-- dữ liệu sau khi bổ: số múi, nhãn múi, cân vỏ, cân cơm, cân hạt.
+- dữ liệu cây: chiều cao và độ rộng tán, tách rõ số app ước lượng với số đo đối chứng,
+- dữ liệu sau khi bổ: số múi, nhãn múi, cân vỏ, cân cơm, cân hạt, độ Brix và hàm lượng chất khô.
 
 ## Chuẩn Bị Trước Buổi Lấy Mẫu
 
@@ -25,11 +26,17 @@ Thiết bị tối thiểu:
 - Đèn LED ổn định.
 - Cân.
 - Thước đo.
+- Thước dây/laser đo khoảng cách và máy đo góc hoặc máy đo cao cây để lấy số đối chứng.
 - Bảng caro/Charuco.
 - Tem QR/DataMatrix hoặc dây buộc mã mẫu.
 - Dao, thớt, khay đựng cơm/hạt/vỏ.
 - Găng tay, khăn lau, túi rác.
 - File Excel/log mẫu.
+
+Thiết bị phòng đo cho mẫu sau khi bổ:
+
+- Khúc xạ kế điện tử đo `°Brix`, nước cất và giấy lau mềm.
+- Cân tối thiểu chính xác `0,01 g`, đĩa/cốc sấy, tủ sấy `70°C` và bình hút ẩm.
 
 Trước khi bắt đầu:
 
@@ -125,6 +132,35 @@ Với từng quả:
 7. Ghi `grade_reason`: tròn, kích thước, 2.7 múi to, 2.5 múi, kem, đồ, lỗi khác.
 8. Quan sát nhanh lỗi ngoài vỏ: nứt, dập, sâu, gai gãy nhiều, mốc.
 
+## Đo Chiều Cao Cây Và Độ Rộng Tán
+
+App hiện đã có luồng đo bằng ARKit/LiDAR, nhưng phản hồi của nhóm lấy mẫu cho thấy kết quả chưa đúng. Vì vậy số từ app chỉ là `app_estimate`, chưa được dùng làm ground truth cho tới khi vượt qua đo đối chứng ngoài hiện trường.
+
+Với mỗi `tree_id`:
+
+1. Ghi GPS, ngày giờ, người đo, thiết bị và chụp một ảnh toàn cây có thấy gốc/ngọn.
+2. Dùng app đo 3 lần từ cùng vị trí; ghi từng lần, không chỉ ghi số trung bình.
+3. Đo chiều cao đối chứng bằng máy đo cao/laser. Nếu không có, đo khoảng cách ngang `D` từ máy tới gốc và góc có dấu tới ngọn `α_top`, tới gốc `α_base`, rồi tính:
+
+```text
+tree_height_ref_m = D * (tan(α_top) - tan(α_base))
+```
+
+4. Đo tán trên mặt đất theo hai đường kính: `D1` là hướng rộng nhất, `D2` vuông góc với `D1`. Ghi cả hai và tính:
+
+```text
+canopy_width_ref_m = (D1 + D2) / 2
+```
+
+5. Khi so với app, đứng theo đúng hướng `D1`, ghi hướng chụp và so `canopy_width_app_m` với `canopy_d1_ref_m`.
+6. Lặp đo đối chứng ít nhất 2 lần nếu gốc/ngọn bị che, nền dốc hoặc mép tán không rõ; ghi cờ QC thay vì tự sửa số.
+
+Pilot kiểm định tối thiểu 20 cây, trải đều cây thấp/cao và tán hẹp/rộng. Báo cáo `bias`, `MAE`, `MAPE` và độ lặp lại của 3 lần đo app. Trước khi có báo cáo này, đặt:
+
+```text
+tree_measurement_status = ESTIMATE_UNVERIFIED
+```
+
 ## Cách Quay Mỗi Quả
 
 ### Lượt A
@@ -191,6 +227,41 @@ Chỉ bổ sau khi đã quét xong các lượt cần thiết.
 
 Không trộn cơm/hạt/vỏ giữa các quả trước khi cân xong.
 
+## Đo Brix Và Hàm Lượng Chất Khô
+
+Phần này thực hiện ở đợt lấy mẫu sau, ngay sau khi bổ. Với dữ liệu cũ, nếu không còn cơm quả được lưu riêng theo đúng `fruit_id` thì ghi `not_measured`; không suy ra Brix/chất khô từ ảnh. Mẫu đông lạnh, nếu có, phải ghi điều kiện lưu và phân tích thành nhóm riêng, không trộn với mẫu tươi.
+
+Chuẩn bị một mẫu cơm đại diện lấy từ ít nhất 2 hộc, trộn đồng nhất rồi chia cho hai phép đo.
+
+### Độ Brix
+
+1. Zero khúc xạ kế bằng nước cất và lau khô.
+2. Ép/lọc mẫu đồng nhất, nhỏ 2-3 giọt lên lăng kính.
+3. Đo 3 lần, vệ sinh lăng kính giữa các mẫu và lưu `brix_rep1`, `brix_rep2`, `brix_rep3`, `brix_mean`.
+4. Nếu cơm quá đặc phải pha loãng, khóa một tỷ lệ cho toàn pilot và ghi khối lượng cơm/nước. Kết quả hiệu chỉnh:
+
+```text
+brix_corrected = brix_reading * (pulp_mass + water_mass) / pulp_mass
+```
+
+`°Brix` là chỉ số chất rắn hòa tan, không được ghi thành “% đường chính xác”.
+
+### Hàm lượng chất khô
+
+Làm 2 mẫu lặp, mỗi mẫu khoảng 10-20 g:
+
+1. Cân đĩa rỗng: `m0`.
+2. Cân đĩa + mẫu tươi: `m1`.
+3. Sấy ở `70°C` trong 48 giờ, làm nguội trong bình hút ẩm rồi cân. Sấy thêm từng 2-4 giờ tới khi khối lượng thay đổi dưới `0,01 g`: `m2`.
+4. Tính:
+
+```text
+dry_matter_pct = (m2 - m0) / (m1 - m0) * 100
+moisture_pct = 100 - dry_matter_pct
+```
+
+Giữ nguyên một nhiệt độ, thời gian, khối lượng mẫu và cách lấy mẫu trong toàn pilot.
+
 ## Cột Excel Tối Thiểu
 
 ```text
@@ -199,6 +270,15 @@ fruit_id
 farm_id
 tree_id
 fruit_seq
+tree_height_app_rep1_m
+tree_height_app_rep2_m
+tree_height_app_rep3_m
+tree_height_ref_m
+canopy_width_app_m
+canopy_d1_ref_m
+canopy_d2_ref_m
+canopy_width_ref_m
+tree_measurement_status
 pass
 camera_id
 capture_date
@@ -213,6 +293,16 @@ edible_flesh_weight
 seed_weight
 segment_count
 segment_labels
+brix_rep1
+brix_rep2
+brix_rep3
+brix_mean
+brix_pulp_mass_g
+brix_water_mass_g
+dry_matter_rep1_pct
+dry_matter_rep2_pct
+dry_matter_mean_pct
+quality_measurement_status
 notes
 ```
 
@@ -231,9 +321,11 @@ non_destructive
 1. Đếm số quả thực tế và số dòng Excel.
 2. Kiểm tra mỗi `fruit_id` có đủ video `A-C1`, `A-C2`, `B-C1`, `B-C2` nếu quét đủ 2 lượt.
 3. Kiểm tra quả đã bổ có đủ cân vỏ/cơm/hạt.
-4. Sao lưu video và ảnh sang ổ khác hoặc cloud.
-5. Xuất CSV/XLSX log.
-6. Ghi lại lỗi quy trình để buổi sau sửa.
+4. Kiểm tra mỗi cây có số app lặp lại và số đo đối chứng; số app chưa kiểm định phải mang trạng thái `ESTIMATE_UNVERIFIED`.
+5. Kiểm tra quả đo chất lượng có đủ 3 lần Brix và 2 mẫu chất khô, hoặc ghi rõ `not_measured`.
+6. Sao lưu video và ảnh sang ổ khác hoặc cloud.
+7. Xuất CSV/XLSX log.
+8. Ghi lại lỗi quy trình để buổi sau sửa.
 
 ## Không Làm Trong Bản Thử Nghiệm
 

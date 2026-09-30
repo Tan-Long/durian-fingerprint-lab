@@ -5,3 +5,18 @@ __pycache__/
 *.ply
 *.mov
 *.heic
+
+# Harness core maintenance binary
+scripts/bin/harness
+scripts/bin/harness.exe
+
+# Local datasets, generated reports, environments, and agent worktrees.
+.venv/
+.worktrees/
+/01_videos/
+/output/
+/tmp/
+/test_video/processed/
+*.HEIC
+*.MOV
+*.MP4

@@ -3,6 +3,31 @@
 Question: can the existing turntable videos be inverse-projected onto a
 spherical equal-area UV map that preserves whole spike shapes?
 
+Compare one 360° Scanner video with arbitrary consumer photos using the
+throwaway full-map/partial-map prototype:
+
+```sh
+python3 prototypes/durian_2d_projection/prototype_pattern_match.py test_video
+```
+
+Build a full-detail mesh, radial height surface, and tip/base spike graph from
+the Scanner turntable capture:
+
+```sh
+python3 prototypes/durian_2d_projection/scan_to_spikes.py test_video
+```
+
+The mesh scale is estimated from Scanner depth and `camera_matrix.csv`. Pass a
+measured meters-per-model-unit value with `--scale` when a calibration marker is
+available.
+
+Project the reconstructed tip/base graph back onto the source RGB video for a
+human audit (`red = tip`, `cyan = base boundary`):
+
+```sh
+python3 prototypes/durian_2d_projection/audit_overlay.py test_video
+```
+
 Run every fruit:
 
 ```sh
@@ -13,6 +38,26 @@ Run selected fruits while iterating:
 
 ```sh
 python3 prototypes/durian_2d_projection/project.py Q11 Q16
+```
+
+Process the renamed ColdHead dataset directly from its ZIP archives:
+
+```sh
+python3 prototypes/durian_2d_projection/project.py V8C3 --source /Volumes/ColdHead
+```
+
+Run only the black-background iPhone 11 capture. The turntable protocol is one
+constant-speed revolution; captures with less than 60° of detected texture
+motion are rejected. Tune `--min-motion` only when inspection justifies it.
+
+```sh
+python3 prototypes/durian_2d_projection/project.py V8C3 --source /Volumes/ColdHead --capture iphone11-20-den
+```
+
+Audit the Excel-to-video mapping without decoding videos:
+
+```sh
+python3 prototypes/durian_2d_projection/project.py --source /Volumes/ColdHead --list
 ```
 
 Open `prototypes/durian_2d_projection/output/index.html` when processing
@@ -60,4 +105,4 @@ python3 prototypes/durian_2d_projection/batch_3d.py
 ```
 
 Requirements already present on the development machine: Python 3, NumPy,
-SciPy, FFmpeg, and ffprobe.
+SciPy, OpenPyXL (for `RENAME.xlsx`), FFmpeg, and ffprobe.
