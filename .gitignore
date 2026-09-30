@@ -1,7 +1,23 @@
 .DS_Store
+__pycache__/
 *.zip
 *.mp4
 *.ply
 *.mov
 *.heic
 
+# Harness core maintenance binary
+scripts/bin/harness
+scripts/bin/harness.exe
+
+# Local datasets, generated reports, environments, and agent worktrees.
+.venv/
+.worktrees/
+/01_videos/
+/output/
+/tmp/
+/.playwright-mcp/
+/test_video/processed/
+*.HEIC
+*.MOV
+*.MP4

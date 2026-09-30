@@ -1,0 +1,76 @@
+{
+  "sources": {
+    "workbook": "/Volumes/SoilTECH/Ảnh chụp sầu riêng/Chụp Hộc/SAMPLE_Fruit_morphology.xlsx",
+    "workbook_sha256": "35949f1781998c31f3e52027ee66bbe7b11f3122c5b2ef8efc5b32255cd61e78",
+    "samples": "/Volumes/SoilTECH/DurianData/collections/202608_RIG_V1/manifests/samples.csv",
+    "samples_sha256": "c9eed8c0454cb93d5ed3301f97649dbd2e2a8660685774f43360bc6d601dfcc9"
+  },
+  "workbook_summary": {
+    "fruit_rows": 123,
+    "locule_rows": 563,
+    "locule_rows_with_fruit_id": 562,
+    "locule_rows_without_valid_fruit_id": 1,
+    "valid_locule_number_rows": 562,
+    "valid_locule_number_rows_with_fruit_id": 561,
+    "valid_targets": {
+      "locule_count": 111,
+      "aril_count": 107,
+      "shell_thickness_mm": 119,
+      "empty_locule_count": 36
+    },
+    "issues_by_code": {
+      "missing_or_invalid_fruit_id": 1,
+      "missing_numeric": 93,
+      "unknown_detail_fruit_id": 3,
+      "nonnumeric": 1,
+      "duplicate_locule_key": 1,
+      "aril_sum_mismatch": 4,
+      "locule_count_mismatch": 12,
+      "locule_number_sequence_mismatch": 8,
+      "unresolved_locule_keys": 4
+    },
+    "crosswalk_status": {
+      "matched": 86,
+      "unmatched": 2
+    }
+  },
+  "collection_target_coverage": {
+    "locule_count": {
+      "matched_labels_passing_checks": 77,
+      "with_existing_rig_video": 76,
+      "with_existing_source_eligible_rig_video": 64,
+      "with_existing_random_photo": 65
+    },
+    "aril_count": {
+      "matched_labels_passing_checks": 77,
+      "with_existing_rig_video": 76,
+      "with_existing_source_eligible_rig_video": 64,
+      "with_existing_random_photo": 65
+    },
+    "shell_thickness_mm": {
+      "matched_labels_passing_checks": 83,
+      "with_existing_rig_video": 82,
+      "with_existing_source_eligible_rig_video": 67,
+      "with_existing_random_photo": 69
+    },
+    "empty_locule_count": {
+      "matched_labels_passing_checks": 0,
+      "with_existing_rig_video": 0,
+      "with_existing_source_eligible_rig_video": 0,
+      "with_existing_random_photo": 0
+    }
+  },
+  "unmatched_samples": [
+    "N2V52C3",
+    "N1V4C1_BONUS"
+  ],
+  "limitations": [
+    "Coverage joins recorded IDs; source labels/media have not been accepted by the user.",
+    "Source dataset_eligible is inherited ingest metadata, not training approval.",
+    "All views of a fruit must remain together in morphology evaluation; no split or model was fitted."
+  ],
+  "inventory_sources": {
+    "/Volumes/SoilTECH/DurianData/collections/202608_RIG_V1/manifests/samples.csv": "c9eed8c0454cb93d5ed3301f97649dbd2e2a8660685774f43360bc6d601dfcc9",
+    "/Volumes/SoilTECH/DurianData/collections/202608_RIG_V1/manifests/files.csv": "9f2e181b50af96b2095b17cf49329f809b79d671199642d218ed21072e4a6d45"
+  }
+}

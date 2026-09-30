@@ -1,0 +1,90 @@
+2026-09-30 — Shared baseline and data index
+Plan: docs/plans/active/durian-two-track-pilot.md
+Owner: coordinator
+GitHub: https://github.com/Tan-Long/durian-fingerprint-lab
+Publication branch: agent/add-durian-2d-projection
+Project acceptance: pending user review
+
+Observed runtime dependencies:
+System python3: openpyxl 3.1.5.
+test_video/.venv: numpy 2.4.4, scipy 1.17.1, opencv-python-headless 5.0.0.93.
+ImageMagick: 7.1.2-18 with HEIC delegate.
+These record the tested machine, not new dependency version requirements.
+
+Source baseline:
+Commit: bfa3925b533795467455795e7fb8d1d01add85f2
+Push: origin/agent/add-durian-2d-projection
+Observed remote SHA: bfa3925b533795467455795e7fb8d1d01add85f2
+Existing modified/untracked source and documents were committed.
+Raw media, generated results, temporary files and environments remain local.
+Baseline checks: 8 ingest/viewer tests and 14 projection/spike tests, all OK.
+Baseline whitespace check reported pre-existing whitespace in saved notes and
+templates; these were preserved in the source snapshot.
+
+Shared index:
+Commit: 87fdda6
+Command: python3 -B -m unittest discover -s scripts -p 'test_build_dataset_index.py' -v
+Observed: 2 tests ran, all OK, exit 0.
+Checks: media selection and provenance, missing files, unresolved identities,
+preservation of REVIEW flags, source bytes unchanged, source output rejected.
+Command: python3 -B scripts/build_dataset_index.py /Volumes/SoilTECH/DurianData/collections/202608_RIG_V1 --output output/data-index
+Observed: exit 0; 88 sample records; 325,311 file-manifest records.
+Selected media: 3,146 files = 210 RGB videos + 2,509 random photos + 427 chamber photos.
+Missing selected paths: 0.
+Unresolved sample links: 1,343 = 1,058 random photos + 285 chamber photos.
+Sample inventory coverage: 87 with video, 72 with random photos, 62 with chamber photos.
+Source samples.csv SHA-256: c9eed8c0454cb93d5ed3301f97649dbd2e2a8660685774f43360bc6d601dfcc9
+Source files.csv SHA-256: 9f2e181b50af96b2095b17cf49329f809b79d671199642d218ed21072e4a6d45
+Artifacts: output/data-index/samples.csv, media.csv, summary.json.
+
+Cross-review by /root/fingerprint:
+No publication-blocking issue found. Links use exact collection/sample IDs;
+unknown IDs stay unresolved; sources are read/hashed only; output inside the
+collection and output-file symlinks are rejected.
+Counts are inventory counts, including missing paths if any; they are not
+counts of reviewed independent images or valid training examples.
+
+User acceptance rule:
+Technical verification, publication and user acceptance are separate.
+The coordinator prepares reviewed results; the user checks before project PASS.
+No CI execution, merge blocking, main-branch merge, or model accuracy is claimed.
+
+Integrated review and publication:
+Final test transcript: tests.log, 33 tests OK across all three local commands.
+Verified index/audit use the same samples.csv hash; all 88 original UNREVIEWED
+statuses are preserved in morphology crosswalk sample_status.
+Published code and evidence commit: a260cb7e83044a0699e9deda21b04029281cf2bb.
+Command: git ls-remote origin refs/heads/agent/add-durian-2d-projection
+Observed: a260cb7e83044a0699e9deda21b04029281cf2bb.
+Coordinator checkout was clean after that push.
+This documentation-only follow-up records the observed publication.
+Both first increments remain AWAITING_USER_REVIEW; no user PASS recorded.
+
+2026-09-30 — Subsequent user acceptance
+User explicitly replied "Duyệt" to the report for snapshot
+2ef6f24e609670002ce0e3c52182ebae3c3d0d18.
+PASS scope: first fingerprint tooling, morphology audit and shared-index increment.
+This supersedes prior pending acceptance; full pilot and model accuracy are not PASS.
+Coordinator assigned both agents read-only evaluation-readiness assessments.
+No dataset edits, new evaluation policy, training, deployment or main merge authorized
+by this acceptance record. Existing incremental implementation plan remains active.
+
+2026-09-30 — Core-code increment after pausing photo work
+User instruction: report both agents' progress, skip the two photo tasks,
+prioritize core code. Source images, organized copies and official review state
+were not modified. Deferred per-photo API remains on agent/photo-review-server.
+
+Reviewed and cherry-picked:
+- Fingerprint a89903a -> 217546e: recorded-ID ranking and explicit batch queries.
+- Morphology 55744d2 -> 7d2ccfe: reviewed-input constant-median reference pipeline.
+Root owns README, shared plan and the separate project evidence logs.
+
+Integrated snapshot 7d2ccfe: 33 script tests + 18 matcher/ingest tests +
+14 projection tests = 65 passed, no skips, all exit 0. Commands and complete
+output appended to tests.log. git diff --check and morphology CLI help pass.
+Tests include both real subprocess CLI flows on synthetic fixtures; no actual
+dataset benchmark or recognized-identity/prediction-accuracy claim.
+No new dependencies, external services, hooks or CI/merge settings introduced.
+
+Acceptance for this increment: AWAITING_USER_REVIEW.
+Only user review can grant PASS; first-increment acceptance remains unchanged.

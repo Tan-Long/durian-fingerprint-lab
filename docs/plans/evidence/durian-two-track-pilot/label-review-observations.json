@@ -1,0 +1,52 @@
+{
+  "sources": {
+    "reviewer": "Coordinator visual inspection, 2026-09-30; observations only, not user-approved ground truth",
+    "IMG20260827153335.jpg": "e8da82a3d0f02eae01f178c5d3574c3812963c6833218157d11be7c926e375a8",
+    "IMG_9786.JPG": "583f57cd7e9d99b114ab9f3356d97e2af5457ab368480b19e5d20faabce971ea",
+    "IMG_9787.JPG": "fbe9f208a362c24372ff49b70690ac0508c879ede438863e3b0e06711454ca50",
+    "IMG_9943.JPG": "530a1cf0234e9a1e424535aaf424b1349f9dbb998e742648231508c3157eba69",
+    "IMG_9944.JPG": "a7732d9f9e92eceb241899bf86574ac5f0096138cf4a7792b51c3c403d4421e1",
+    "IMG_9946.JPG": "f9ebac6c472fead82c2eb4eead810ff5996ee48b47f3a4f67071a5d2ed6713b8",
+    "IMG_9959.JPG": "f51f83f5fac6d0817f6c2e2e2993d595d10d0be8d710450335ac421f818fa0fb",
+    "IMG_9760.JPG": "555b1d094c5166a41c9cc3aad1f4e7193de365cdc31c4d08b75ff0f421a9e6a8",
+    "IMG_9740.JPG": "2e1fef51bc5fdf054c98c5e83b34b723d072e4cc3fb03dfab3606b87836d3c68",
+    "IMG_9925.JPG": "a554f3bc112a6279916b9f6a925740e2d14d78dee54a44e63ebf7f0325acc4b9",
+    "IMG_9897.JPG": "9d938694960e7f07045508bbe2bc08a635da54424bb987713fc8950d9db54bde",
+    "IMG_9661.JPG": "5faaf4e933da98476b8ad3ad6891bd67422e2260bb6f97902f5f24c6d3bac810"
+  },
+  "findings": {
+    "identity-e8da82a3d0f02eae": [
+      "Tự kiểm tra bằng mắt: IMG20260827153335.jpg là ảnh thẻ mẫu, chữ nhìn thấy đọc là N2-V4-C3; không phải ảnh toàn bộ vỏ để đánh giá dấu vân tự nhiên.",
+      "Ba bản sao đã được băm lại và có nội dung giống hệt. Chữ trên thẻ là bằng chứng để bạn xem xét mã N2V4C3, chưa chứng minh thẻ luôn đi cùng đúng trái. Chưa tự sửa liên kết N1V4C2."
+    ],
+    "unmatched-N1V4C1_BONUS": [
+      "Tự kiểm tra bằng mắt: nhãn IMG_9786.JPG ghi N1-V4-C1-bonus-H1; IMG_9787.JPG ghi N1-V4-C1-bonus-H2. Cả hai là ảnh sau bổ.",
+      "Có bằng chứng ảnh cho cách ghi BONUS và hai nhãn H1/H2, nhưng chưa tự xác nhận nối hai cách viết Fruit-ID trong Excel hoặc gộp với trái N1V4C1 thường."
+    ],
+    "counts-N2V13C3": [
+      "Tự kiểm tra bằng mắt: IMG_9943.JPG có nhãn N2-V13-C3-H2; IMG_9944.JPG có nhãn H3; IMG_9946.JPG đọc là H5 nhưng có nét viết sửa ở phần số hộc.",
+      "Ảnh H5 là bằng chứng cần đối chiếu với dòng 653 thiếu Fruit-ID, chưa đủ để tự gán dòng đó hoặc xác nhận tổng số múi. Chưa sửa A653."
+    ],
+    "counts-N1V1C2": [
+      "Tự kiểm tra bằng mắt: IMG_9760.JPG là ảnh sau bổ, nhãn đọc N1-V1C2-H5. Nhãn H5 cần đối chiếu với tổng 4 hộc tại Q41; riêng số ghi trên thẻ chưa chứng minh tổng hộc thực tế."
+    ],
+    "counts-N1V2C2": [
+      "Tự kiểm tra bằng mắt: IMG_9740.JPG có nhãn đọc N1-V2C2-H4. Cần đối chiếu tổng 3 hộc tại Q44 với phiếu và ảnh còn lại; chưa tự sửa tổng thành 4."
+    ],
+    "counts-N1V11C1": [
+      "Tự kiểm tra bằng mắt: IMG_9925.JPG có nhãn N1-V11-C1-H2. Xác nhận nội dung nhìn thấy của thẻ ảnh, chưa xác nhận toàn bộ dãy hộc hoặc tổng múi của trái."
+    ],
+    "counts-N1V11C3": [
+      "Tự kiểm tra bằng mắt: IMG_9897.JPG có nhãn N1-V11-C3-H4. Ảnh H4 không đủ chứng minh có hay không có hộc H5 đang thiếu trong chi tiết."
+    ],
+    "counts-N2V1C2": [
+      "Tự kiểm tra bằng mắt: IMG_9661.JPG có nhãn N2-V1C2-H1. Đây là ứng viên ảnh để đối chiếu ô số hộc B442 bị điền mã trái; chưa tự quyết định ô đó phải là H1."
+    ],
+    "counts-N1V4C1": [
+      "Ảnh IMG_9786.JPG/IMG_9787.JPG đã xem mang nhãn BONUS H1/H2; không dùng chúng để xác nhận trái N1V4C1 thường. Cần ảnh hoặc phiếu ghi phân biệt hai trái."
+    ],
+    "counts-N2V17C3": [
+      "Tự kiểm tra bằng mắt: IMG_9959.JPG có nhãn N2-V17-C3-H3. Ảnh này không xác định được dòng H3 nào trong Excel phải đổi thành H2; cần đối chiếu thêm ảnh hoặc phiếu ghi gốc."
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+Sầu riêng fingerprint scanner
+
+Cần nghiên cứu thêm
+- [ ] Tìm các nghiên cứu, project liên quan đã từng làm để nhận diện fingerprint cho hoa quả, thực phẩm đặc biệt là sầu riêng
+- [ ] Ưu tiên nhanh gọn lẹ, có thể triển khai ở end user với những máy yếu hơn.
+- [ ] Quy trình Scan đầu vào nhanh gọn linh hoạt. Lưu được đúng Dataset, truy xuất ngược thông tin nhanh
+- [ ] Khi gán QR vào quả sầu bị tráo qủa thì phải bắt được.
+- [ ] Qủa không có trong hệ thống đầu vào 
+- [ ] 
+
+2 cách xử lý 
+    - [ ] Có QR của quả sầu riêng đó, Scan đúng quả sầu riêng ( thu hẹp scope chỉ cần gọi đúng 1 mẫu ra để check, không phải gọi toàn bộ Database)
+    - [ ] Mỗi fingerprint có hạn ( date bao nhiêu ngày, ví dụ 3 tháng từ vườn tới người mua cuối) sau khi Scan lưu vào Database ( 3 tháng-6 tháng). Khi quét thì đối chiếu với tất cả các mẫu trong Database (nặng và khi chạy sẽ lâu, yêu cầu hạ tầng dữ liệu tốt)
+Nếu ko dungf QR thì máy chủ vẫn nên ưu tiên theo lô/ngày/khu vực trước để giảm nhầm.
+
+Chuyển đổi video Scan ra một pattern 2d. chỉ lưu pattern 2D sau đó làm cách nào đó khớp lại quả và so sánh. Khi chụp thì từ cái ảnh sang 2d mapping gai patterm để đối chiếu
+
+
+Đầu vào
+Cho quả sầu vào khung rig
+Quay 1 vòng quét đủ các góc của quả sầu
+Mapping pattern gai của quả sầu thành 2D đen trắng. Gai và chân gai sẽ được để màu trắng
+
+
+Đảm bảo chụp từ góc nào cũng được mà đang chuyển từ map 3D sang mập 2D thì cái khoảng cách, cái hinh tròn tách ra tôi sợ bị sai số (cái này chắc có bài toán đặc thù)
+
+Sai số thi từ ở vườn hoặc htx hay doanh nghiệp đầu vào, khi tới tay người mua mất lâu thời gian, các quả từ lúc mới chín tới lúc chín già khác nhau (màu sắc, kích cỡ ?, gai ? Gãy,)
+
+Hệ thống xử lý Data ở backend ( chạy trên cloud hay chạy trên máy người dùng).

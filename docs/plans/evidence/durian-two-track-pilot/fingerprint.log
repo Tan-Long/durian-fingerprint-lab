@@ -1,0 +1,88 @@
+2026-09-30 — Fingerprint increment 1
+Plan: docs/plans/active/durian-two-track-pilot.md
+Agent: /root/fingerprint
+Worktree: .worktrees/fingerprint
+Branch: agent/fingerprint-pilot
+Agent commit: 6c6371004f84d62f060d74b1a58ea0c7205af78e
+Integrated commit: 8b6ff5d
+Acceptance: AWAITING_USER_REVIEW (automated checks do not grant project PASS)
+
+Delivered:
+- Shared matcher handles empty and one-reference descriptor inputs.
+- Homography overlay requires sufficient selected points.
+- query_multiview_banks.py reads READY banks and shortlists separately for
+  each root's vocabulary/PCA. Bank arrays are checked before use.
+- Recorded sample/session/camera IDs are retained; identity_verdict is null.
+
+Coordinator verification:
+Command: test_video/.venv/bin/python -B -m unittest discover -s test_video -p 'test_*.py' -v
+Observed: 11 tests ran, all OK, exit 0.
+Coverage: existing ingest/viewer behavior; sparse and valid geometry;
+different encoders; READY filter; malformed bank arrays.
+
+Agent real-data smoke (reported and artifact available for inspection):
+Command: /Users/jin/durian-fingerprint-lab/test_video/.venv/bin/python -B test_video/query_multiview_banks.py --image /Volumes/SoilTECH/DurianData/collections/202608_RIG_V1/staging/unverified/random_photos/by_sample_unverified/N1V11C1/IMG20260827114814.jpg --bank-root /Volumes/SoilTECH/DurianScan/27082026/processed_multiview_v1 --bank-root /Volumes/SoilTECH/DurianScan/28082026/processed_multiview_v1 --top-k 3
+Artifact: .worktrees/fingerprint/output/fingerprint/query-smoke.json
+Committed copy: docs/plans/evidence/durian-two-track-pilot/fingerprint-smoke.json
+Observed: 82 READY sessions; 164 banks; 5,904 views; two REVIEW sessions excluded.
+Elapsed for this run: 5.62 seconds. Query features: 1,522.
+Evidence: six shortlisted views, 7–10 geometric inliers, 0–1 non-dark inliers.
+
+Coordinator review:
+- Inspected matcher diff, full query CLI and its tests before integration.
+- Inspected query image: handwriting on shell and a label on the stem.
+- Read the saved JSON and confirmed counts, elapsed time and evidence ranges.
+- Source bank reads do not mutate data; no video decoding or fitting performed.
+- No calibrated acceptance threshold or verified identity result is available.
+
+User check:
+- Inspect CLI output and limits before accepting this tooling increment.
+- This run is not evidence of natural fingerprint identification accuracy.
+- User acceptance and independent recognition benchmark remain pending.
+
+2026-09-30 — Subsequent user acceptance
+User response to the coordinator's Vietnamese report: "Duyệt".
+Accepted snapshot: 2ef6f24e609670002ce0e3c52182ebae3c3d0d18.
+Acceptance: PASS for increment 1 tooling only; supersedes the pending status above.
+No identity labels, calibrated thresholds or recognition accuracy were accepted.
+Next assignment: read-only evaluation-readiness assessment; no model training.
+
+2026-09-30 — Core-code priority: recorded-fruit ranking and batch queries
+Authority: user requested skipping photo work and resuming both project cores.
+Agent branch: agent/fingerprint-ranking-batch from a30a112.
+Agent commit: a89903a29e267c3b311727e021042e835f1802f6.
+Integrated commit: 217546e (coordinator reviewed complete code/test diff).
+
+Changes:
+- Add fruit_ranking grouped by exact recorded sample_id, ranked by best
+  geometric inliers/non-dark inliers/epipolar error, then stable provenance.
+- Supporting indexes reference the final candidates array. Duplicate cameras
+  and sessions do not accumulate rank; cross-root coarse scores never compare.
+- --batch accepts explicit unique query_id/image pairs. Relative paths use
+  the input JSON directory. Per-query failures retain other results; exit 2.
+- Both CLI modes reuse the same image loading, features and bank matcher.
+
+Coordinator command:
+test_video/.venv/bin/python -B -m unittest discover -s test_video -p 'test_query_multiview_banks.py' -v
+Observed: 10 tests passed, none skipped, exit 0. Generated PNG CLI exercises
+real image decode/extraction and fixture banks; no SoilTECH images used.
+Tests cover two encoders, repeated sessions/cameras, stable ties, exact IDs,
+malformed/empty batches, partial failure, timings and single-image compatibility.
+
+Limits: no calibrated identity verdict, benchmark, threshold or accuracy claim.
+Recorded-ID grouping does not resolve identity across arbitrary collections.
+Batch rereads banks per query; no speculative persistent index/cache added.
+Acceptance: AWAITING_USER_REVIEW for this increment, not model PASS.
+
+2026-09-30 — Real two-stream diagnostic, awaiting user review
+Integrated visual builder fec200e and fresh RGBD consumer322584b. Source sample
+N1V10C3/session20260828-124510-e9f5, original CAM_TREN/CAM_DUOI,36frames each.
+Fresh run output/rgbd-N1V10C3-review/pack.json:1483 queryfeatures,72frames,
+29.124seconds,0 geometric inliers everywhere. Frame82/80 are earliest ties.
+Read-only agent audit:71frames fail minimum8 ratio matches; CAM_DUOI621 has9
+but no usable geometry. Precise fitting failure branch not retained. No obvious
+mask/coordinate issue; no threshold adjustment or recognition success claim.
+Previous bank run output/n1v10c3-real-demo/pack.json remains unchanged:
+top3 N2V52C3,N1V1C3,N1V12C2; selected N1V10C3 absent. Media has exact candidate
+frames and native point overlays; sources hashed, identity/confidence null.
+Local tests:33 test_video passed, plus root UI/assembly checks. Awaiting review.
