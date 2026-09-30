@@ -97,10 +97,13 @@ def top_views(query: np.ndarray, bank: np.ndarray, count: int) -> tuple[np.ndarr
 
 
 def geometric_match(query: dict, reference: dict) -> dict:
-    pairs = cv2.BFMatcher(cv2.NORM_L2).knnMatch(
-        query["descriptors"], reference["descriptors"], k=2
-    )
-    good = [first for first, second in pairs if first.distance < 0.74 * second.distance]
+    # SIFT may return no features; the ratio test needs two reference neighbors.
+    pairs = []
+    if len(query["descriptors"]) and len(reference["descriptors"]) >= 2:
+        pairs = cv2.BFMatcher(cv2.NORM_L2).knnMatch(
+            query["descriptors"], reference["descriptors"], k=2
+        )
+    good = [pair[0] for pair in pairs if len(pair) == 2 and pair[0].distance < 0.74 * pair[1].distance]
     result = {"matches": good, "inlier_mask": np.zeros(len(good), bool), "inliers": 0, "non_dark_inliers": 0, "error": None, "visual_transform": None}
     if len(good) < 8:
         return result
@@ -126,9 +129,11 @@ def geometric_match(query: dict, reference: dict) -> dict:
     non_dark = np.asarray(
         [not query["dark"][item.queryIdx] and not reference["dark"][item.trainIdx] for item in good]
     )
-    visual_transform, _ = cv2.findHomography(
-        source[selected], target[selected], cv2.RANSAC, 6.0
-    )
+    visual_transform = None
+    if selected.sum() >= 4:
+        visual_transform, _ = cv2.findHomography(
+            source[selected], target[selected], cv2.RANSAC, 6.0
+        )
     result.update(
         inlier_mask=selected,
         inliers=int(selected.sum()),
